@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Melody Engine SPA Demo</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #111827;
+        color: #e5e7eb;
+      }
+
+      .app-shell {
+        display: flex;
+        height: 100vh;
+      }
+
+      .sidebar {
+        width: 280px;
+        padding: 16px;
+        background: #020617;
+        border-right: 1px solid #1f2937;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .sidebar h1 {
+        font-size: 18px;
+        margin: 0 0 4px;
+      }
+
+      .sidebar small {
+        color: #9ca3af;
+      }
+
+      .form-group {
+        margin-bottom: 12px;
+      }
+
+      .form-group label {
+        display: block;
+        font-size: 13px;
+        margin-bottom: 4px;
+        color: #9ca3af;
+      }
+
+      .form-group input,
+      .form-group select {
+        width: 100%;
+        padding: 6px 8px;
+        border-radius: 4px;
+        border: 1px solid #4b5563;
+        background: #020617;
+        color: #e5e7eb;
+        font-size: 13px;
+      }
+
+      .button {
+        padding: 8px 12px;
+        font-size: 14px;
+        border-radius: 4px;
+        border: none;
+        background: #4f46e5;
+        color: #e5e7eb;
+        cursor: pointer;
+        width: 100%;
+      }
+
+      .button:hover {
+        background: #4338ca;
+      }
+
+      .main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .tabs {
+        display: flex;
+        border-bottom: 1px solid #1f2937;
+        background: #0b1120;
+      }
+
+      .tab {
+        padding: 10px 14px;
+        font-size: 13px;
+        cursor: pointer;
+        color: #9ca3af;
+      }
+
+      .tab.active {
+        color: #e5e7eb;
+        border-bottom: 2px solid #4f46e5;
+      }
+
+      .content {
+        flex: 1;
+        display: flex;
+        padding: 10px;
+        gap: 10px;
+        overflow: hidden;
+      }
+
+      .panel {
+        flex: 1;
+        border-radius: 6px;
+        background: #020617;
+        border: 1px solid #1f2937;
+        padding: 8px;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+      }
+
+      .panel h2 {
+        font-size: 14px;
+        margin: 0 0 6px;
+      }
+
+      .panel-inner {
+        flex: 1;
+        overflow: auto;
+        font-size: 12px;
+      }
+
+      pre {
+        margin: 0;
+        white-space: pre;
+        font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+      }
+
+      /* Simple piano roll */
+      .piano-roll {
+        position: relative;
+        width: 100%;
+        height: 260px;
+        background: #020617;
+        border-radius: 4px;
+        border: 1px solid #1f2937;
+        overflow: hidden;
+      }
+
+      .piano-roll-grid {
+        position: absolute;
+        inset: 0;
+      }
+
+      .piano-roll-grid .beat-line {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 1px;
+        background: #111827;
+      }
+
+      .piano-roll-note {
+        position: absolute;
+        border-radius: 3px;
+        background: #4f46e5;
+        opacity: 0.9;
+      }
+
+      .piano-roll-axis-label {
+        font-size: 10px;
+        color: #6b7280;
+        position: absolute;
+        left: 4px;
+      }
+
+      .footer {
+        padding: 6px 10px;
+        font-size: 11px;
+        color: #6b7280;
+        border-top: 1px solid #1f2937;
+        background: #020617;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="app-shell">
+      <!-- LEFT SIDEBAR / CONTROLS -->
+      <aside class="sidebar">
+        <div>
+          <h1>Melody Engine</h1>
+          <small>SPA-like demo (HTML + JS only)</small>
+        </div>
+
+        <div class="form-group">
+          <label for="key-select">Key Root (MIDI)</label>
+          <select id="key-select">
+            <option value="60">C4 (60)</option>
+            <option value="62">D4 (62)</option>
+            <option value="64">E4 (64)</option>
+            <option value="65">F4 (65)</option>
+            <option value="67">G4 (67)</option>
+            <option value="69">A4 (69)</option>
+            <option value="71">B4 (71)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="range-min">Min MIDI</label>
+          <input type="number" id="range-min" value="60" />
+        </div>
+
+        <div class="form-group">
+          <label for="range-max">Max MIDI</label>
+          <input type="number" id="range-max" value="84" />
+        </div>
+
+        <div class="form-group">
+          <label for="rhythm-preset">Rhythm Preset</label>
+          <select id="rhythm-preset">
+            <option value="default">Default Test</option>
+            <option value="even">Even Quarters</option>
+            <option value="syncopated">Syncopated</option>
+          </select>
+        </div>
+
+        <button class="button" id="btn-generate">Regenerate Melody</button>
+      </aside>
+
+      <!-- MAIN AREA -->
+      <main class="main">
+        <div class="tabs">
+          <div class="tab active" data-tab="visual">Visual</div>
+          <div class="tab" data-tab="json">JSON</div>
+        </div>
+
+        <div class="content">
+          <!-- Left panel: piano roll / visual -->
+          <section class="panel" id="panel-visual">
+            <h2>Piano Roll View</h2>
+            <div class="panel-inner">
+              <div class="piano-roll" id="piano-roll">
+                <!-- Notes & grid lines drawn via JS -->
+              </div>
+            </div>
+          </section>
+
+          <!-- Right panel: JSON output -->
+          <section class="panel" id="panel-json" style="display: none;">
+            <h2>Raw Output (events / phrases / motifs)</h2>
+            <div class="panel-inner">
+              <pre id="json-output">Click "Regenerate Melody" to see output.</pre>
+            </div>
+          </section>
+        </div>
+
+        <div class="footer">
+          This is a simple SPA-like shell: no React, just HTML + JS modules.
+        </div>
+      </main>
+    </div>
+
+    <!-- Our main app logic -->
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
