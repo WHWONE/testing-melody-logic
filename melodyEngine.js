@@ -407,16 +407,59 @@ export function generateMelody(config, rhythmSequence, chords) {
       config.memory.lastIntervalSemitones = chosen.midi - lastMidi;
     }
 
-    events.push({
-      startBeat: currentBeat,
-      duration,
-      midi: chosen.midi,
-      velocity: 100
-    });
+    // ----- NEW: velocity variation -----
+    const isStrongBeat = Math.abs(currentBeat - Math.round(currentBeat)) < 0.001;
+    let velocity = isStrongBeat ? 115 : 85;
+
+    const phraseProgress =
+      (currentBeat - phrase.startBeat) / (phrase.endBeat - phrase.startBeat);
+    if (phraseProgress > 0.7) {
+      // get a bit louder near the end of the phrase
+      velocity += 10;
+    }
+
+    velocity = Math.max(40, Math.min(127, Math.round(velocity)));
+
+    // ----- NEW: optional grace note -----
+    const canGrace = duration >= 0.5; // don't try on tiny notes
+    const addGrace = canGrace && Math.random() < 0.2; // 20% chance
+
+    if (addGrace) {
+      const graceDuration = Math.min(0.25, duration / 3);
+      const mainDuration = duration - graceDuration;
+
+      const graceMidi = chosen.midi - 1; // half-step below
+      const graceVelocity = Math.max(40, Math.min(127, velocity - 15));
+
+      // quick pickup note
+      events.push({
+        startBeat: currentBeat,
+        duration: graceDuration,
+        midi: graceMidi,
+        velocity: graceVelocity
+      });
+
+      // main note slightly later
+      events.push({
+        startBeat: currentBeat + graceDuration,
+        duration: mainDuration,
+        midi: chosen.midi,
+        velocity
+      });
+    } else {
+      // normal single note
+      events.push({
+        startBeat: currentBeat,
+        duration,
+        midi: chosen.midi,
+        velocity
+      });
+    }
 
     lastMidi = chosen.midi;
     lastDegree = chosen.degree;
     currentBeat += duration;
+
   }
 
   return {

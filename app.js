@@ -219,10 +219,12 @@ async function playMelody() {
     const durationSec = ev.duration * secondsPerBeat;
 
     Tone.Transport.schedule((time) => {
+      const vel = ev.velocity !== undefined ? ev.velocity / 127 : 0.8;
       synth.triggerAttackRelease(
         Tone.Frequency(ev.midi, "midi"),
         durationSec,
-        time
+        time,
+        vel
       );
     }, startTime);
   }
