@@ -58,7 +58,13 @@ function nearestScaleDegree(pitch, scalePitches) {
 }
 
 // Return pitch for given scale degree index (0..6) in a given register range
-function choosePitchForDegree(scaleDegree, scalePitches, minMidi, maxMidi, targetRegisterMidi) {
+function choosePitchForDegree(
+  scaleDegree,
+  scalePitches,
+  minMidi,
+  maxMidi,
+  targetRegisterMidi
+) {
   const candidates = [];
   for (let i = 0; i < scalePitches.length; i++) {
     if (i % MAJOR_SCALE_STEPS.length === scaleDegree) {
@@ -109,7 +115,7 @@ function buildPhrasePlan(totalBeats, config) {
       endBeat,
       role: roles[i],
       shape: shapes[i],
-      targetScaleDegree: isLast ? 0 : 0, // tonic for now; could vary (0 = 1st degree)
+      targetScaleDegree: isLast ? 0 : 0, // tonic for now
       targetStrength: isLast ? "strong" : "open",
       minRegister: config.minMidi,
       maxRegister: config.maxMidi,
@@ -122,7 +128,10 @@ function buildPhrasePlan(totalBeats, config) {
 }
 
 function findPhraseAtBeat(phrases, beat) {
-  return phrases.find(p => beat >= p.startBeat && beat < p.endBeat) || phrases[phrases.length - 1];
+  return (
+    phrases.find((p) => beat >= p.startBeat && beat < p.endBeat) ||
+    phrases[phrases.length - 1]
+  );
 }
 
 ///////////////////////
@@ -162,17 +171,33 @@ function buildMotifs(config) {
 function buildMotifPlan(phrases, motifs) {
   // Very simple: P1 uses M_A, P2 uses transposed M_A, P3 uses M_B, P4 uses stretched M_A
   return [
-    { phraseId: "P1", motifId: "M_A", transform: { transposeSteps: 0, rhythmStretch: 1.0 } },
-    { phraseId: "P2", motifId: "M_A", transform: { transposeSteps: 2, rhythmStretch: 1.0 } },
-    { phraseId: "P3", motifId: "M_B", transform: { transposeSteps: 4, rhythmStretch: 1.0 } },
-    { phraseId: "P4", motifId: "M_A", transform: { transposeSteps: 0, rhythmStretch: 2.0 } }
+    {
+      phraseId: "P1",
+      motifId: "M_A",
+      transform: { transposeSteps: 0, rhythmStretch: 1.0 }
+    },
+    {
+      phraseId: "P2",
+      motifId: "M_A",
+      transform: { transposeSteps: 2, rhythmStretch: 1.0 }
+    },
+    {
+      phraseId: "P3",
+      motifId: "M_B",
+      transform: { transposeSteps: 4, rhythmStretch: 1.0 }
+    },
+    {
+      phraseId: "P4",
+      motifId: "M_A",
+      transform: { transposeSteps: 0, rhythmStretch: 2.0 }
+    }
   ];
 }
 
 function findActiveMotifNoteAtBeat(phrase, motifs, motifPlan, beatWithinPhrase) {
-  const assignment = motifPlan.find(mp => mp.phraseId === phrase.id);
+  const assignment = motifPlan.find((mp) => mp.phraseId === phrase.id);
   if (!assignment) return null;
-  const motif = motifs.find(m => m.id === assignment.motifId);
+  const motif = motifs.find((m) => m.id === assignment.motifId);
   if (!motif) return null;
 
   const stretch = assignment.transform.rhythmStretch || 1.0;
@@ -197,7 +222,10 @@ function findActiveMotifNoteAtBeat(phrase, motifs, motifPlan, beatWithinPhrase) 
 // chords: [{ startBeat, endBeat, chordDegrees: [0,2,4,...] }]
 // chordDegrees are scale-degree indices (0..6) representing chord tones.
 function findChordAtBeat(chords, beat) {
-  return chords.find(c => beat >= c.startBeat && beat < c.endBeat) || chords[chords.length - 1];
+  return (
+    chords.find((c) => beat >= c.startBeat && beat < c.endBeat) ||
+    chords[chords.length - 1]
+  );
 }
 
 ///////////////////////
@@ -222,7 +250,7 @@ function scoreCandidatePitch({
   if (lastMidi !== null) {
     const interval = Math.abs(candidateMidi - lastMidi);
     if (interval === 0) score *= 0.6; // avoid too many repeats
-    else if (interval <= 2) score *= 1.3; // small step (1–2 semitones)
+    else if (interval <= 2) score *= 1.3; // small step
     else if (interval <= 5) score *= 1.1; // small leap
     else if (interval <= 12) score *= 0.7; // big leap
     else score *= 0.4; // huge leap
@@ -234,7 +262,6 @@ function scoreCandidatePitch({
     const bigLeap = Math.abs(lastInt) >= 7;
     const thisInt = candidateMidi - lastMidi;
     if (bigLeap) {
-      // prefer opposite direction small steps
       if (Math.sign(thisInt) === Math.sign(lastInt)) {
         score *= 0.5;
       } else if (Math.abs(thisInt) <= 2) {
@@ -246,13 +273,13 @@ function scoreCandidatePitch({
   // 3) Harmony awareness: chord tones vs tensions
   if (chord) {
     const isChordTone = chord.chordDegrees.includes(candidateDegree);
-    const isStrongBeat = Math.abs(beat - Math.round(beat)) < 0.001; // crude: on whole beats
+    const isStrongBeat = Math.abs(beat - Math.round(beat)) < 0.001;
     if (isChordTone && isStrongBeat) {
       score *= 1.5;
     } else if (isChordTone) {
       score *= 1.2;
     } else if (!isChordTone && isStrongBeat) {
-      score *= 0.7; // tension on strong beat is riskier
+      score *= 0.7;
     }
   }
 
@@ -268,7 +295,8 @@ function scoreCandidatePitch({
   // 5) Motif adherence
   if (motifContext && config.memory.phraseStartMidi !== null) {
     const rootMidi = config.memory.phraseStartMidi;
-    const expected = rootMidi + motifContext.motifNote.intervalFromStart * 2; // rough step -> 2 semitones
+    const expected =
+      rootMidi + motifContext.motifNote.intervalFromStart * 2; // rough step -> 2 semitones
     const dist = Math.abs(candidateMidi - expected);
     if (dist < 3) score *= 1.4;
     else if (dist < 6) score *= 1.1;
@@ -293,23 +321,6 @@ function scoreCandidatePitch({
 ///////////////////////
 // Main engine
 ///////////////////////
-
-// config example:
-// {
-//   keyRootMidi: 60,  // C4
-//   minMidi: 60,
-//   maxMidi: 84,
-//   totalBeats: 16
-// }
-//
-// rhythmSequence: array of positive numbers in beats, e.g. [1, 0.5, 0.5, 1, ...]
-//
-// chords: [
-//   { startBeat: 0, endBeat: 4, chordDegrees: [0,2,4] }, // I
-//   { startBeat: 4, endBeat: 8, chordDegrees: [1,3,5] }, // ii
-//   { startBeat: 8, endBeat: 12, chordDegrees: [4,6,1] }, // V
-//   { startBeat: 12, endBeat: 16, chordDegrees: [0,2,4] } // I
-// ]
 
 export function generateMelody(config, rhythmSequence, chords) {
   const totalBeats = config.totalBeats || 16;
@@ -386,7 +397,7 @@ export function generateMelody(config, rhythmSequence, chords) {
       });
     }
 
-    const chosen = weightedChoice(candidates, c => c.score) || candidates[0];
+    const chosen = weightedChoice(candidates, (c) => c.score) || candidates[0];
 
     // Update memory
     if (phrase && config.memory.phraseStartMidi === null) {
@@ -400,7 +411,7 @@ export function generateMelody(config, rhythmSequence, chords) {
       startBeat: currentBeat,
       duration,
       midi: chosen.midi,
-      velocity: 100 // constant for now; could add dynamics later
+      velocity: 100
     });
 
     lastMidi = chosen.midi;
