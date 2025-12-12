@@ -2,7 +2,7 @@
 // Main SPA-like controller for the Melody Engine demo
 
 import { generateMelody } from "./melodyEngine.js";
-import * as Tone from "https://cdn.jsdelivr.net/npm/tone@14.7.77/build/Tone.js";
+import * as Tone from "https://cdn.jsdelivr.net/npm/tone@14.7.77/+esm";
 
 // ---------- Tone.js synth + state ----------
 
@@ -186,7 +186,11 @@ async function playMelody() {
     const durationSec = ev.duration * secondsPerBeat;
 
     Tone.Transport.schedule((time) => {
-      synth.triggerAttackRelease(Tone.Frequency(ev.midi, "midi"), durationSec, time);
+      synth.triggerAttackRelease(
+        Tone.Frequency(ev.midi, "midi"),
+        durationSec,
+        time
+      );
     }, startTime);
   }
 

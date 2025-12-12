@@ -1,276 +1,226 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>Melody Engine SPA Demo</title>
-    <style>
-      * {
-        box-sizing: border-box;
-      }
+// app.js
+// Main SPA-like controller for the Melody Engine demo
 
-      body {
-        margin: 0;
-        font-family: Arial, sans-serif;
-        background: #111827;
-        color: #e5e7eb;
-      }
+import { generateMelody } from "./melodyEngine.js";
+import * as Tone from "https://cdn.jsdelivr.net/npm/tone@14.7.77/build/Tone.js";
 
-      .app-shell {
-        display: flex;
-        height: 100vh;
-      }
+// ---------- Tone.js synth + state ----------
 
-      .sidebar {
-        width: 280px;
-        padding: 16px;
-        background: #020617;
-        border-right: 1px solid #1f2937;
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-      }
+const synth = new Tone.Synth({
+  oscillator: { type: "sine" },
+  envelope: { attack: 0.01, decay: 0.1, sustain: 0.3, release: 0.4 }
+}).toDestination();
 
-      .sidebar h1 {
-        font-size: 18px;
-        margin: 0 0 4px;
-      }
+let lastGeneratedMelody = null;
 
-      .sidebar small {
-        color: #9ca3af;
-      }
+// ---------- DOM refs ----------
 
-      .form-group {
-        margin-bottom: 12px;
-      }
+const keySelect = document.getElementById("key-select");
+const rangeMinInput = document.getElementById("range-min");
+const rangeMaxInput = document.getElementById("range-max");
+const rhythmPresetSelect = document.getElementById("rhythm-preset");
+const generateBtn = document.getElementById("btn-generate");
+const playBtn = document.getElementById("btn-play");
 
-      .form-group label {
-        display: block;
-        font-size: 13px;
-        margin-bottom: 4px;
-        color: #9ca3af;
-      }
+const pianoRollEl = document.getElementById("piano-roll");
+const jsonOutputEl = document.getElementById("json-output");
 
-      .form-group input,
-      .form-group select {
-        width: 100%;
-        padding: 6px 8px;
-        border-radius: 4px;
-        border: 1px solid #4b5563;
-        background: #020617;
-        color: #e5e7eb;
-        font-size: 13px;
-      }
+const tabs = document.querySelectorAll(".tab");
+const panelVisual = document.getElementById("panel-visual");
+const panelJson = document.getElementById("panel-json");
 
-      .button {
-        padding: 8px 12px;
-        font-size: 14px;
-        border-radius: 4px;
-        border: none;
-        background: #4f46e5;
-        color: #e5e7eb;
-        cursor: pointer;
-        width: 100%;
-        margin-bottom: 6px;
-      }
+// ---------- Rhythm presets ----------
 
-      .button:hover {
-        background: #4338ca;
-      }
+function getRhythmSequence(preset) {
+  switch (preset) {
+    case "even":
+      // 16 quarter notes (4 bars of 4/4)
+      return new Array(16).fill(1);
 
-      .main {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-      }
+    case "syncopated":
+      return [
+        0.5, 0.5, 1,
+        1, 0.5, 0.5,
+        0.5, 0.5, 1,
+        2,
+        0.5, 0.5, 1,
+        1, 1, 2
+      ];
 
-      .tabs {
-        display: flex;
-        border-bottom: 1px solid #1f2937;
-        background: #0b1120;
-      }
+    case "default":
+    default:
+      return [
+        1, 0.5, 0.5, 1,
+        1, 0.5, 0.5, 1,
+        1, 1, 0.5, 0.5,
+        2, 1, 1, 2
+      ];
+  }
+}
 
-      .tab {
-        padding: 10px 14px;
-        font-size: 13px;
-        cursor: pointer;
-        color: #9ca3af;
-      }
+// ---------- Main generate function ----------
 
-      .tab.active {
-        color: #e5e7eb;
-        border-bottom: 2px solid #4f46e5;
-      }
+function regenerateMelody() {
+  const keyRootMidi = parseInt(keySelect.value, 10);
+  const minMidi = parseInt(rangeMinInput.value, 10);
+  const maxMidi = parseInt(rangeMaxInput.value, 10);
+  const rhythmPreset = rhythmPresetSelect.value;
 
-      .content {
-        flex: 1;
-        display: flex;
-        padding: 10px;
-        gap: 10px;
-        overflow: hidden;
-      }
+  const rhythmSequence = getRhythmSequence(rhythmPreset);
+  const totalBeats = rhythmSequence.reduce((sum, v) => sum + v, 0);
 
-      .panel {
-        flex: 1;
-        border-radius: 6px;
-        background: #020617;
-        border: 1px solid #1f2937;
-        padding: 8px;
-        display: flex;
-        flex-direction: column;
-        min-width: 0;
-      }
+  // Simple I–ii–V–I chord pattern in scale degrees
+  const chords = [
+    { startBeat: 0, endBeat: totalBeats / 4, chordDegrees: [0, 2, 4] }, // I
+    { startBeat: totalBeats / 4, endBeat: totalBeats / 2, chordDegrees: [1, 3, 5] }, // ii
+    { startBeat: totalBeats / 2, endBeat: (3 * totalBeats) / 4, chordDegrees: [4, 6, 1] }, // V
+    { startBeat: (3 * totalBeats) / 4, endBeat: totalBeats, chordDegrees: [0, 2, 4] } // I
+  ];
 
-      .panel h2 {
-        font-size: 14px;
-        margin: 0 0 6px;
-      }
+  const config = {
+    keyRootMidi,
+    minMidi,
+    maxMidi,
+    totalBeats
+  };
 
-      .panel-inner {
-        flex: 1;
-        overflow: auto;
-        font-size: 12px;
-      }
+  const result = generateMelody(config, rhythmSequence, chords);
 
-      pre {
-        margin: 0;
-        white-space: pre;
-        font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
-      }
+  // Store for playback
+  lastGeneratedMelody = { ...result, totalBeats, minMidi, maxMidi };
 
-      /* Simple piano roll */
-      .piano-roll {
-        position: relative;
-        width: 100%;
-        height: 260px;
-        background: #020617;
-        border-radius: 4px;
-        border: 1px solid #1f2937;
-        overflow: hidden;
-      }
+  // Render views
+  renderJson(result);
+  renderPianoRoll(result, minMidi, maxMidi, totalBeats);
+}
 
-      .piano-roll-grid {
-        position: absolute;
-        inset: 0;
-      }
+// ---------- JSON panel ----------
 
-      .piano-roll-grid .beat-line {
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        width: 1px;
-        background: #111827;
-      }
+function renderJson(result) {
+  jsonOutputEl.textContent = JSON.stringify(result, null, 2);
+}
 
-      .piano-roll-note {
-        position: absolute;
-        border-radius: 3px;
-        background: #4f46e5;
-        opacity: 0.9;
-      }
+// ---------- Piano roll visualization ----------
 
-      .piano-roll-axis-label {
-        font-size: 10px;
-        color: #6b7280;
-        position: absolute;
-        left: 4px;
-      }
+function renderPianoRoll(result, minMidi, maxMidi, totalBeats) {
+  // Clear existing
+  pianoRollEl.innerHTML = "";
 
-      .footer {
-        padding: 6px 10px;
-        font-size: 11px;
-        color: #6b7280;
-        border-top: 1px solid #1f2937;
-        background: #020617;
-      }
-    </style>
+  const width = pianoRollEl.clientWidth || 400;
+  const height = pianoRollEl.clientHeight || 260;
 
-    <!-- Tone.js for audio playback -->
-    <script
-      type="module"
-      src="https://cdn.jsdelivr.net/npm/tone@14.7.77/build/Tone.js"
-    ></script>
-  </head>
+  const grid = document.createElement("div");
+  grid.className = "piano-roll-grid";
+  pianoRollEl.appendChild(grid);
 
-  <body>
-    <div class="app-shell">
-      <!-- LEFT SIDEBAR / CONTROLS -->
-      <aside class="sidebar">
-        <div>
-          <h1>Melody Engine</h1>
-          <small>SPA-like demo (HTML + JS only)</small>
-        </div>
+  // Beat lines
+  const beatCount = Math.ceil(totalBeats);
+  for (let b = 0; b <= beatCount; b++) {
+    const line = document.createElement("div");
+    line.className = "beat-line";
+    const x = (b / totalBeats) * width;
+    line.style.left = x + "px";
+    grid.appendChild(line);
+  }
 
-        <div class="form-group">
-          <label for="key-select">Key Root (MIDI)</label>
-          <select id="key-select">
-            <option value="60">C4 (60)</option>
-            <option value="62">D4 (62)</option>
-            <option value="64">E4 (64)</option>
-            <option value="65">F4 (65)</option>
-            <option value="67">G4 (67)</option>
-            <option value="69">A4 (69)</option>
-            <option value="71">B4 (71)</option>
-          </select>
-        </div>
+  const pitchRange = maxMidi - minMidi || 1;
 
-        <div class="form-group">
-          <label for="range-min">Min MIDI</label>
-          <input type="number" id="range-min" value="60" />
-        </div>
+  // Notes
+  for (const ev of result.events) {
+    const noteEl = document.createElement("div");
+    noteEl.className = "piano-roll-note";
 
-        <div class="form-group">
-          <label for="range-max">Max MIDI</label>
-          <input type="number" id="range-max" value="84" />
-        </div>
+    const x = (ev.startBeat / totalBeats) * width;
+    const w = (ev.duration / totalBeats) * width;
 
-        <div class="form-group">
-          <label for="rhythm-preset">Rhythm Preset</label>
-          <select id="rhythm-preset">
-            <option value="default">Default Test</option>
-            <option value="even">Even Quarters</option>
-            <option value="syncopated">Syncopated</option>
-          </select>
-        </div>
+    const relPitch = (ev.midi - minMidi) / pitchRange;
+    const y = height - relPitch * height - 8;
+    const h = 8;
 
-        <button class="button" id="btn-generate">Regenerate Melody</button>
-        <button class="button" id="btn-play">Play Melody</button>
-      </aside>
+    noteEl.style.left = x + "px";
+    noteEl.style.width = Math.max(w, 2) + "px";
+    noteEl.style.top = y + "px";
+    noteEl.style.height = h + "px";
 
-      <!-- MAIN AREA -->
-      <main class="main">
-        <div class="tabs">
-          <div class="tab active" data-tab="visual">Visual</div>
-          <div class="tab" data-tab="json">JSON</div>
-        </div>
+    pianoRollEl.appendChild(noteEl);
+  }
 
-        <div class="content">
-          <!-- Left panel: piano roll / visual -->
-          <section class="panel" id="panel-visual">
-            <h2>Piano Roll View</h2>
-            <div class="panel-inner">
-              <div class="piano-roll" id="piano-roll">
-                <!-- Notes & grid lines drawn via JS -->
-              </div>
-            </div>
-          </section>
+  // Y-axis labels
+  const labelLow = document.createElement("div");
+  labelLow.className = "piano-roll-axis-label";
+  labelLow.style.bottom = "2px";
+  labelLow.textContent = "MIDI " + minMidi;
+  pianoRollEl.appendChild(labelLow);
 
-          <!-- Right panel: JSON output -->
-          <section class="panel" id="panel-json" style="display: none;">
-            <h2>Raw Output (events / phrases / motifs)</h2>
-            <div class="panel-inner">
-              <pre id="json-output">Click "Regenerate Melody" to see output.</pre>
-            </div>
-          </section>
-        </div>
+  const labelHigh = document.createElement("div");
+  labelHigh.className = "piano-roll-axis-label";
+  labelHigh.style.top = "2px";
+  labelHigh.textContent = "MIDI " + maxMidi;
+  pianoRollEl.appendChild(labelHigh);
+}
 
-        <div class="footer">
-          This is a simple SPA-like shell: no React, just HTML + JS modules.
-        </div>
-      </main>
-    </div>
+// ---------- Playback ----------
 
-    <!-- Our main app logic -->
-    <script type="module" src="./app.js"></script>
-  </body>
-</html>
+async function playMelody() {
+  if (!lastGeneratedMelody) return;
 
+  const { events, totalBeats } = lastGeneratedMelody;
+
+  // Start audio context (required on first user interaction)
+  await Tone.start();
+
+  // Set tempo
+  const bpm = 120;
+  Tone.Transport.bpm.value = bpm;
+
+  // Clear previous schedule and reset position
+  Tone.Transport.stop();
+  Tone.Transport.cancel();
+  Tone.Transport.position = 0;
+
+  const secondsPerBeat = 60 / bpm;
+
+  // Schedule each note
+  for (const ev of events) {
+    const startTime = ev.startBeat * secondsPerBeat;
+    const durationSec = ev.duration * secondsPerBeat;
+
+    Tone.Transport.schedule((time) => {
+      synth.triggerAttackRelease(Tone.Frequency(ev.midi, "midi"), durationSec, time);
+    }, startTime);
+  }
+
+  // Stop transport after the phrase is done
+  const totalDurationSec = totalBeats * secondsPerBeat + 1;
+  Tone.Transport.scheduleOnce(() => {
+    Tone.Transport.stop();
+  }, totalDurationSec);
+
+  Tone.Transport.start();
+}
+
+// ---------- Tab behavior ----------
+
+tabs.forEach((tab) => {
+  tab.addEventListener("click", () => {
+    tabs.forEach((t) => t.classList.remove("active"));
+    tab.classList.add("active");
+
+    const target = tab.dataset.tab;
+    if (target === "visual") {
+      panelVisual.style.display = "";
+      panelJson.style.display = "none";
+    } else if (target === "json") {
+      panelVisual.style.display = "none";
+      panelJson.style.display = "";
+    }
+  });
+});
+
+// ---------- Wire up UI ----------
+
+generateBtn.addEventListener("click", regenerateMelody);
+playBtn.addEventListener("click", playMelody);
+
+// Run once on load
+regenerateMelody();
