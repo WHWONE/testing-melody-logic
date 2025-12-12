@@ -70,6 +70,7 @@
         color: #e5e7eb;
         cursor: pointer;
         width: 100%;
+        margin-bottom: 6px;
       }
 
       .button:hover {
@@ -182,6 +183,12 @@
         background: #020617;
       }
     </style>
+
+    <!-- Tone.js for audio playback -->
+    <script
+      type="module"
+      src="https://cdn.jsdelivr.net/npm/tone@14.7.77/build/Tone.js"
+    ></script>
   </head>
 
   <body>
@@ -226,6 +233,7 @@
         </div>
 
         <button class="button" id="btn-generate">Regenerate Melody</button>
+        <button class="button" id="btn-play">Play Melody</button>
       </aside>
 
       <!-- MAIN AREA -->
@@ -265,3 +273,4 @@
     <script type="module" src="./app.js"></script>
   </body>
 </html>
+
