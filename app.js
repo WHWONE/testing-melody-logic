@@ -1,12 +1,26 @@
 // app.js
+// Main SPA-like controller for the Melody Engine demo
+
 import { generateMelody } from "./melodyEngine.js";
+import * as Tone from "https://cdn.jsdelivr.net/npm/tone@14.7.77/build/Tone.js";
+
+// ---------- Tone.js synth + state ----------
+
+const synth = new Tone.Synth({
+  oscillator: { type: "sine" },
+  envelope: { attack: 0.01, decay: 0.1, sustain: 0.3, release: 0.4 }
+}).toDestination();
+
+let lastGeneratedMelody = null;
 
 // ---------- DOM refs ----------
+
 const keySelect = document.getElementById("key-select");
 const rangeMinInput = document.getElementById("range-min");
 const rangeMaxInput = document.getElementById("range-max");
 const rhythmPresetSelect = document.getElementById("rhythm-preset");
 const generateBtn = document.getElementById("btn-generate");
+const playBtn = document.getElementById("btn-play");
 
 const pianoRollEl = document.getElementById("piano-roll");
 const jsonOutputEl = document.getElementById("json-output");
@@ -16,6 +30,7 @@ const panelVisual = document.getElementById("panel-visual");
 const panelJson = document.getElementById("panel-json");
 
 // ---------- Rhythm presets ----------
+
 function getRhythmSequence(preset) {
   switch (preset) {
     case "even":
@@ -24,8 +39,8 @@ function getRhythmSequence(preset) {
 
     case "syncopated":
       return [
-        0.5, 0.5, 1,  // off-beat start
-        1, 0.5, 0.5,  // push into next beat
+        0.5, 0.5, 1,
+        1, 0.5, 0.5,
         0.5, 0.5, 1,
         2,
         0.5, 0.5, 1,
@@ -44,6 +59,7 @@ function getRhythmSequence(preset) {
 }
 
 // ---------- Main generate function ----------
+
 function regenerateMelody() {
   const keyRootMidi = parseInt(keySelect.value, 10);
   const minMidi = parseInt(rangeMinInput.value, 10);
@@ -51,7 +67,6 @@ function regenerateMelody() {
   const rhythmPreset = rhythmPresetSelect.value;
 
   const rhythmSequence = getRhythmSequence(rhythmPreset);
-
   const totalBeats = rhythmSequence.reduce((sum, v) => sum + v, 0);
 
   // Simple I–ii–V–I chord pattern in scale degrees
@@ -71,16 +86,22 @@ function regenerateMelody() {
 
   const result = generateMelody(config, rhythmSequence, chords);
 
+  // Store for playback
+  lastGeneratedMelody = { ...result, totalBeats, minMidi, maxMidi };
+
+  // Render views
   renderJson(result);
   renderPianoRoll(result, minMidi, maxMidi, totalBeats);
 }
 
 // ---------- JSON panel ----------
+
 function renderJson(result) {
   jsonOutputEl.textContent = JSON.stringify(result, null, 2);
 }
 
 // ---------- Piano roll visualization ----------
+
 function renderPianoRoll(result, minMidi, maxMidi, totalBeats) {
   // Clear existing
   pianoRollEl.innerHTML = "";
@@ -92,7 +113,7 @@ function renderPianoRoll(result, minMidi, maxMidi, totalBeats) {
   grid.className = "piano-roll-grid";
   pianoRollEl.appendChild(grid);
 
-  // Add beat lines (1 per beat)
+  // Beat lines
   const beatCount = Math.ceil(totalBeats);
   for (let b = 0; b <= beatCount; b++) {
     const line = document.createElement("div");
@@ -104,7 +125,7 @@ function renderPianoRoll(result, minMidi, maxMidi, totalBeats) {
 
   const pitchRange = maxMidi - minMidi || 1;
 
-  // Add notes
+  // Notes
   for (const ev of result.events) {
     const noteEl = document.createElement("div");
     noteEl.className = "piano-roll-note";
@@ -113,7 +134,7 @@ function renderPianoRoll(result, minMidi, maxMidi, totalBeats) {
     const w = (ev.duration / totalBeats) * width;
 
     const relPitch = (ev.midi - minMidi) / pitchRange;
-    const y = height - relPitch * height - 8; // 8px height
+    const y = height - relPitch * height - 8;
     const h = 8;
 
     noteEl.style.left = x + "px";
@@ -124,7 +145,7 @@ function renderPianoRoll(result, minMidi, maxMidi, totalBeats) {
     pianoRollEl.appendChild(noteEl);
   }
 
-  // Optional: Y-axis label for min/max pitch
+  // Y-axis labels
   const labelLow = document.createElement("div");
   labelLow.className = "piano-roll-axis-label";
   labelLow.style.bottom = "2px";
@@ -138,10 +159,51 @@ function renderPianoRoll(result, minMidi, maxMidi, totalBeats) {
   pianoRollEl.appendChild(labelHigh);
 }
 
+// ---------- Playback ----------
+
+async function playMelody() {
+  if (!lastGeneratedMelody) return;
+
+  const { events, totalBeats } = lastGeneratedMelody;
+
+  // Start audio context (required on first user interaction)
+  await Tone.start();
+
+  // Set tempo
+  const bpm = 120;
+  Tone.Transport.bpm.value = bpm;
+
+  // Clear previous schedule and reset position
+  Tone.Transport.stop();
+  Tone.Transport.cancel();
+  Tone.Transport.position = 0;
+
+  const secondsPerBeat = 60 / bpm;
+
+  // Schedule each note
+  for (const ev of events) {
+    const startTime = ev.startBeat * secondsPerBeat;
+    const durationSec = ev.duration * secondsPerBeat;
+
+    Tone.Transport.schedule((time) => {
+      synth.triggerAttackRelease(Tone.Frequency(ev.midi, "midi"), durationSec, time);
+    }, startTime);
+  }
+
+  // Stop transport after the phrase is done
+  const totalDurationSec = totalBeats * secondsPerBeat + 1;
+  Tone.Transport.scheduleOnce(() => {
+    Tone.Transport.stop();
+  }, totalDurationSec);
+
+  Tone.Transport.start();
+}
+
 // ---------- Tab behavior ----------
-tabs.forEach(tab => {
+
+tabs.forEach((tab) => {
   tab.addEventListener("click", () => {
-    tabs.forEach(t => t.classList.remove("active"));
+    tabs.forEach((t) => t.classList.remove("active"));
     tab.classList.add("active");
 
     const target = tab.dataset.tab;
@@ -156,7 +218,9 @@ tabs.forEach(tab => {
 });
 
 // ---------- Wire up UI ----------
+
 generateBtn.addEventListener("click", regenerateMelody);
+playBtn.addEventListener("click", playMelody);
 
 // Run once on load
 regenerateMelody();
