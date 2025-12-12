@@ -47,6 +47,14 @@ function getRhythmSequence(preset) {
         1, 1, 2
       ];
 
+case "dotted-groove":
+  return [
+    1, 0.75, 0.25, 1.5, 
+    0.5, 0.5, 0.5, 1, 
+    0.75, 0.75, 0.5, 1, 
+    1, 0.5, 0.5, 2
+  ];
+
     case "default":
     default:
       return [
@@ -55,6 +63,31 @@ function getRhythmSequence(preset) {
         1, 1, 0.5, 0.5,
         2, 1, 1, 2
       ];
+
+case "swing":
+  return [
+    1, 0.5, 0.5, 1, 
+    1, 0.75, 0.25, 1, 
+    1, 0.5, 0.5, 1, 
+    1, 0.75, 0.25, 2
+  ];
+
+case "triplet-feel":
+  return [
+    0.33, 0.33, 0.33, 1, 
+    0.5, 0.5, 1, 1, 
+    0.33, 0.33, 0.33, 1, 
+    1, 1, 0.5, 0.5
+  ];
+
+case "waltz":
+  return [
+    1, 1, 1,   // Bar 1: three quarter notes
+    1, 0.5, 0.5, // Bar 2: quarter, two eighths
+    1, 1, 1,   // Bar 3: three quarter notes
+    0.5, 0.5, 1  // Bar 4: two eighths, quarter
+  ];
+
   }
 }
 
