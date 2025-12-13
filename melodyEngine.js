@@ -322,6 +322,57 @@ function scoreCandidatePitch({
 // Main engine
 ///////////////////////
 
+// ---------------------
+// Silence / rests model
+// ---------------------
+
+function getSilencePlanForPhraseRole(role) {
+  // "A vs B" feel: statement = A (more continuous), answer = B (more breathing)
+  // development/cadence are treated as slightly more spacious.
+  switch (role) {
+    case "statement":
+      return {
+        budgetMax: 1,
+        pPhraseEndRest: 0.12,
+        pCadenceAnticipation: 0.18,
+        pOrnamentBreath: 0.35
+      };
+    case "answer":
+      return {
+        budgetMax: 2,
+        pPhraseEndRest: 0.22,
+        pCadenceAnticipation: 0.28,
+        pOrnamentBreath: 0.45
+      };
+    case "development":
+      return {
+        budgetMax: 2,
+        pPhraseEndRest: 0.18,
+        pCadenceAnticipation: 0.22,
+        pOrnamentBreath: 0.40
+      };
+    case "cadence":
+      return {
+        budgetMax: 2,
+        pPhraseEndRest: 0.28,
+        pCadenceAnticipation: 0.35,
+        pOrnamentBreath: 0.45
+      };
+    default:
+      return {
+        budgetMax: 1,
+        pPhraseEndRest: 0.15,
+        pCadenceAnticipation: 0.20,
+        pOrnamentBreath: 0.35
+      };
+  }
+}
+
+function beatIsStrong(beat) {
+  return Math.abs(beat - Math.round(beat)) < 0.001;
+}
+
+
 export function generateMelody(config, rhythmSequence, chords) {
   const totalBeats = config.totalBeats || 16;
 
