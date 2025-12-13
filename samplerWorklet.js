@@ -46,8 +46,8 @@ const durFrames = Math.max(1, Math.floor((msg.dur || 0.25) * sampleRate));
         stopFrame: startFrame + durFrames,
         vel: msg.vel ?? 0.8,
         // Simple ADSR (seconds)
-        a: 0.008,
-        d: 0.06,
+        a: 0.004,
+        d: 0.10,
         s: 0.85,
         r: 0.35,
         released: false,
