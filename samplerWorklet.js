@@ -20,13 +20,18 @@ class WorkletSampler extends AudioWorkletProcessor {
       const s = this.samples.get(msg.baseMidi);
       if (!s) return;
 
-      const startFrame = Math.max(
-        0,
-        Math.floor((msg.t || currentTime) * sampleRate)
-      );
+// Desired start time (may already be in the past)
+const desiredStart = Math.floor((msg.t || currentTime) * sampleRate);
 
-      // Convert duration to frames
-      const durFrames = Math.max(1, Math.floor((msg.dur || 0.25) * sampleRate));
+// Safety margin so late messages still play audibly
+const safetyFrames = Math.floor(0.01 * sampleRate); // 10 ms
+
+// Clamp start so it is never in the past
+const startFrame = Math.max(desiredStart, currentFrame + safetyFrames);
+
+// Duration in frames
+const durFrames = Math.max(1, Math.floor((msg.dur || 0.25) * sampleRate));
+
 
       // Handle sample-rate mismatch: playback needs factor (sampleSR / contextSR)
       const srFactor = s.sr / sampleRate;
