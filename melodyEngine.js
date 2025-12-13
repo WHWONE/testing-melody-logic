@@ -351,6 +351,20 @@ export function generateMelody(config, rhythmSequence, chords) {
 
     // find chord at this moment
     const chord = findChordAtBeat(chords, currentBeat);
+        // ----- NEW: optional rests -----
+    // Demo rule: small chance of a rest, but avoid resting on strong beats too often.
+    const isStrongBeat = Math.abs(currentBeat - Math.round(currentBeat)) < 0.001;
+
+    // Tune these two numbers:
+    const restChance = isStrongBeat ? 0.10 : 0.18; // fewer rests on strong beats
+    const allowRest = duration >= 0.5;            // avoid absurdly tiny rests
+
+    if (allowRest && Math.random() < restChance) {
+      // Rest: don't add any events, just advance time.
+      currentBeat += duration;
+      continue;
+    }
+
 
     // motif context
     const motifContext = findActiveMotifNoteAtBeat(
