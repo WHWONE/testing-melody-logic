@@ -33,7 +33,7 @@ const startFrame = Math.max(desiredStart, currentFrame + safetyFrames);
 const durFrames = Math.max(1, Math.floor((msg.dur || 0.25) * sampleRate));
 
 // Minimum “hold” so ornaments don’t vanish (try 70–90ms)
-const minHoldFrames = Math.floor(0.08 * sampleRate); // 80 ms
+const minHoldFrames = Math.floor(0.09 * sampleRate); // 80 ms
 const heldDurFrames = Math.max(durFrames, minHoldFrames);
 
 
