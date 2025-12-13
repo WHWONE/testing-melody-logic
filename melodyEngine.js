@@ -549,8 +549,6 @@ if (phraseProgressVel > 0.7) {
     const addGrace = canGrace && Math.random() < 0.2; // 20% chance
     // NEW: slot timing controls for musical breathing
     // (for now, keep these at 0; later they come from phrase logic)
-    const preRestBeats = 0;            // anticipatory silence (inside slot)
-    const tailRestBeats = 0;           // breath after ornament (inside slot)
 
     const slotStartBeat = currentBeat + preRestBeats;
     const playableDuration = Math.max(0.05, duration - preRestBeats);
