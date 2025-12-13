@@ -48,12 +48,13 @@ const heldDurFrames = Math.max(durFrames, minHoldFrames);
         rate: (msg.rate || 1) * srFactor,
         startFrame,
         stopFrame: startFrame + heldDurFrames,
-        vel: msg.vel ?? 0.8,
+        // Velocity curve: makes differences more audible
+        vel: Math.pow(msg.vel ?? 0.8, 2.0),
         // Simple ADSR (seconds)
         a: 0.004,
         d: 0.10,
-        s: 0.85,
-        r: 0.35,
+        s: 0.90,
+        r: 0.45,
         released: false,
         env: 0
       });
