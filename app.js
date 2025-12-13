@@ -204,18 +204,27 @@ async function playMelody() {
   // Small lookahead so messages arrive before playback
   const t0 = now() + 0.75;
 
-  for (const ev of events) {
-    const startTime = t0 + ev.startBeat * secondsPerBeat;
-    const durationSec = ev.duration * secondsPerBeat;
-    const vel01 = ev.velocity !== undefined ? ev.velocity / 127 : 0.8;
+  let count = 0;
 
-    playNoteAt({
-      midi: ev.midi,
-      timeSec: startTime,
-      durationSec,
-      velocity01: vel01
-    });
+  for (const ev of events) {
+  const startTime = t0 + ev.startBeat * secondsPerBeat;
+  const durationSec = ev.duration * secondsPerBeat;
+  const vel01 = ev.velocity !== undefined ? ev.velocity / 127 : 0.8;
+
+  playNoteAt({
+    midi: ev.midi,
+    timeSec: startTime,
+    durationSec,
+    velocity01: vel01
+  });
+
+  count++;
+
+  // Yield every 50 notes so postMessage delivery stays timely
+  if (count % 25 === 0) {
+    await new Promise(requestAnimationFrame);
   }
+}
 }
 
 
