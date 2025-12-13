@@ -395,6 +395,21 @@ export function generateMelody(config, rhythmSequence, chords) {
     phraseStartMidi: null
   };
 
+  // Track phrase-level "silence budget" so we don't overdo rests.
+const silenceStateByPhrase = new Map();
+function getPhraseSilenceState(p) {
+  if (!silenceStateByPhrase.has(p.id)) {
+    const plan = getSilencePlanForPhraseRole(p.role);
+    silenceStateByPhrase.set(p.id, {
+      budgetUsed: 0,
+      budgetMax: plan.budgetMax,
+      plan
+    });
+  }
+  return silenceStateByPhrase.get(p.id);
+}
+
+
   for (let i = 0; i < rhythmSequence.length; i++) {
     const duration = rhythmSequence[i];
     const phrase = findPhraseAtBeat(phrases, currentBeat);
