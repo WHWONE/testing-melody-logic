@@ -456,6 +456,9 @@ if (budgetLeft && isPhraseEndingSlot) {
      //currentBeat += duration;
       //continue;
     //}
+    // --- Silence controls (defined once per slot) ---
+    let preRestBeats = 0;   // anticipatory silence BEFORE the note inside this slot
+    let tailRestBeats = 0;  // tiny breath AFTER ornamentation inside this slot
 
 
     // motif context
