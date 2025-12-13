@@ -535,11 +535,11 @@ const strongBeatForVel = beatIsStrong(currentBeat);
 let velocity = strongBeatForVel ? 115 : 85;
 
 
-    const phraseProgress =
-      (currentBeat - phrase.startBeat) / (phrase.endBeat - phrase.startBeat);
-    if (phraseProgress > 0.7) {
-      // get a bit louder near the end of the phrase
-      velocity += 10;
+const phraseProgressVel =
+  (currentBeat - phrase.startBeat) / (phrase.endBeat - phrase.startBeat);
+if (phraseProgressVel > 0.7) {
+  // get a bit louder near the end of the phrase
+  velocity += 10;
     }
 
     velocity = Math.max(40, Math.min(127, Math.round(velocity)));
