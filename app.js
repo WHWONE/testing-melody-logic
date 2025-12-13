@@ -194,35 +194,30 @@ async function playMelody() {
 
   const { events, totalBeats } = lastGeneratedMelody;
 
-  // Start audio context (required on first user interaction)
-  await Tone.start();
+  // Boot audio + start context
+  await initAudio();
+  await ensureRunning();
 
-  // Set tempo
   const bpm = 120;
-  Tone.Transport.bpm.value = bpm;
-
-  // Clear previous schedule and reset position
-  Tone.Transport.stop();
-  Tone.Transport.cancel();
-  Tone.Transport.position = 0;
-
   const secondsPerBeat = 60 / bpm;
 
-  // Schedule each note
-  for (const ev of events) {
-    const startTime = ev.startBeat * secondsPerBeat;
-    const durationSec = ev.duration * secondsPerBeat;
+  // Small lookahead so messages arrive before playback
+  const t0 = now() + 0.15;
 
-    Tone.Transport.schedule((time) => {
-      const vel = ev.velocity !== undefined ? ev.velocity / 127 : 0.8;
-      synth.triggerAttackRelease(
-        Tone.Frequency(ev.midi, "midi"),
-        durationSec,
-        time,
-        vel
-      );
-    }, startTime);
+  for (const ev of events) {
+    const startTime = t0 + ev.startBeat * secondsPerBeat;
+    const durationSec = ev.duration * secondsPerBeat;
+    const vel01 = ev.velocity !== undefined ? ev.velocity / 127 : 0.8;
+
+    playNoteAt({
+      midi: ev.midi,
+      timeSec: startTime,
+      durationSec,
+      velocity01: vel01
+    });
   }
+}
+
 
   // Stop transport after the phrase is done
   const totalDurationSec = totalBeats * secondsPerBeat + 1;
