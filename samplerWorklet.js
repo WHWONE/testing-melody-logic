@@ -48,8 +48,8 @@ const durFrames = Math.max(1, Math.floor((msg.dur || 0.25) * sampleRate));
         // Simple ADSR (seconds)
         a: 0.008,
         d: 0.06,
-        s: 0.6,
-        r: 0.12,
+        s: 0.85,
+        r: 0.35,
         released: false,
         env: 0
       });
