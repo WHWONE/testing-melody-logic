@@ -504,6 +504,23 @@ if (budgetLeft && isPhraseEndingSlot) {
     }
 
     const chosen = weightedChoice(candidates, (c) => c.score) || candidates[0];
+    // -----------------------------
+// Anticipatory silence before cadences
+// (tiny rest *inside* this slot, before the note group)
+// -----------------------------
+let preRestBeats = 0;
+const canPreRest = budgetLeft && duration >= 0.5;
+const nearingPhraseEnd = phraseProgress > 0.70;
+const cadenceTarget = chosen.degree === phrase.targetScaleDegree;
+
+if (canPreRest && nearingPhraseEnd && cadenceTarget) {
+  if (Math.random() < silencePlan.pCadenceAnticipation) {
+    preRestBeats = Math.min(0.125, duration * 0.25); // up to an 1/8 note
+    silenceState.budgetUsed += 1;
+  }
+}
+
+    
 
     // Update memory
     if (phrase && config.memory.phraseStartMidi === null) {
@@ -514,8 +531,9 @@ if (budgetLeft && isPhraseEndingSlot) {
     }
 
     // ----- NEW: velocity variation -----
-const isStrongBeatForVel = Math.abs(currentBeat - Math.round(currentBeat)) < 0.001;
-let velocity = isStrongBeatForVel ? 115 : 85;
+const strongBeatForVel = beatIsStrong(currentBeat);
+let velocity = strongBeatForVel ? 115 : 85;
+
 
     const phraseProgress =
       (currentBeat - phrase.startBeat) / (phrase.endBeat - phrase.startBeat);
@@ -529,38 +547,110 @@ let velocity = isStrongBeatForVel ? 115 : 85;
     // ----- NEW: optional grace note -----
     const canGrace = duration >= 0.5; // don't try on tiny notes
     const addGrace = canGrace && Math.random() < 0.2; // 20% chance
+    // NEW: slot timing controls for musical breathing
+// (for now, keep these at 0; later they come from phrase logic)
+const preRestBeats = 0;            // anticipatory silence (inside slot)
+const tailRestBeats = 0;           // breath after ornament (inside slot)
 
-    if (addGrace) {
-      const graceDuration = Math.min(0.25, duration / 3);
-      const mainDuration = duration - graceDuration;
+const slotStartBeat = currentBeat + preRestBeats;
+const playableDuration = Math.max(0.05, duration - preRestBeats);
 
-      const graceMidi = chosen.midi - 1; // half-step below
-      const graceVelocity = Math.max(40, Math.min(127, velocity - 15));
 
-      // quick pickup note
-      events.push({
-        startBeat: currentBeat,
-        duration: graceDuration,
-        midi: graceMidi,
-        velocity: graceVelocity
-      });
+if (addGrace) {
+  const graceDuration = Math.min(0.25, playableDuration / 3);
 
-      // main note slightly later
-      events.push({
-        startBeat: currentBeat + graceDuration,
-        duration: mainDuration,
-        midi: chosen.midi,
-        velocity
-      });
-    } else {
-      // normal single note
-      events.push({
-        startBeat: currentBeat,
-        duration,
-        midi: chosen.midi,
-        velocity
-      });
-    }
+  // Leave a tiny gap after ornamentation by shortening the main note
+  let effectiveTail = tailRestBeats;
+  let mainDuration = playableDuration - graceDuration - effectiveTail;
+
+  if (mainDuration < 0.05) {
+    effectiveTail = 0;
+    mainDuration = playableDuration - graceDuration;
+  }
+
+  const graceMidi = chosen.midi - 1; // half-step below
+  const graceVelocity = Math.max(40, Math.min(127, velocity - 15));
+
+  // quick pickup note
+  events.push({
+    startBeat: slotStartBeat,
+    duration: graceDuration,
+    midi: graceMidi,
+    velocity: graceVelocity
+  });
+
+  // main note slightly later
+  events.push({
+    startBeat: slotStartBeat + graceDuration,
+    duration: mainDuration,
+    midi: chosen.midi,
+    velocity
+  });
+} else {
+  // normal single note
+  let effectiveTail = tailRestBeats;
+  let noteDur = playableDuration - effectiveTail;
+
+  if (noteDur < 0.05) {
+    effectiveTail = 0;
+    noteDur = playableDuration;
+  }
+
+  events.push({
+    startBeat: slotStartBeat,
+    duration: noteDur,
+    midi: chosen.midi,
+    velocity
+  });
+}
+if (addGrace) {
+  const graceDuration = Math.min(0.25, playableDuration / 3);
+
+  // Leave a tiny gap after ornamentation by shortening the main note
+  let effectiveTail = tailRestBeats;
+  let mainDuration = playableDuration - graceDuration - effectiveTail;
+
+  if (mainDuration < 0.05) {
+    effectiveTail = 0;
+    mainDuration = playableDuration - graceDuration;
+  }
+
+  const graceMidi = chosen.midi - 1; // half-step below
+  const graceVelocity = Math.max(40, Math.min(127, velocity - 15));
+
+  // quick pickup note
+  events.push({
+    startBeat: slotStartBeat,
+    duration: graceDuration,
+    midi: graceMidi,
+    velocity: graceVelocity
+  });
+
+  // main note slightly later
+  events.push({
+    startBeat: slotStartBeat + graceDuration,
+    duration: mainDuration,
+    midi: chosen.midi,
+    velocity
+  });
+} else {
+  // normal single note
+  let effectiveTail = tailRestBeats;
+  let noteDur = playableDuration - effectiveTail;
+
+  if (noteDur < 0.05) {
+    effectiveTail = 0;
+    noteDur = playableDuration;
+  }
+
+  events.push({
+    startBeat: slotStartBeat,
+    duration: noteDur,
+    midi: chosen.midi,
+    velocity
+  });
+}
+
 
     lastMidi = chosen.midi;
     lastDegree = chosen.degree;
