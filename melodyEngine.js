@@ -414,9 +414,35 @@ function getPhraseSilenceState(p) {
     const duration = rhythmSequence[i];
     const phrase = findPhraseAtBeat(phrases, currentBeat);
     const beatWithinPhrase = currentBeat - phrase.startBeat;
+    const phraseLen = phrase.endBeat - phrase.startBeat;
+const phraseProgress = phraseLen > 0 ? beatWithinPhrase / phraseLen : 0;
+const beatsRemainingInPhrase = Math.max(0, phrase.endBeat - currentBeat);
+
+const silenceState = getPhraseSilenceState(phrase);
+const silencePlan = silenceState.plan;
+const budgetLeft = silenceState.budgetUsed < silenceState.budgetMax;
+
 
     // find chord at this moment
     const chord = findChordAtBeat(chords, currentBeat);
+    // -----------------------------
+// MUSICAL RESTS (hierarchical)
+// 1) Phrase-end rest (occasional)
+// 2) Anticipatory silence before cadence moments (handled after pitch selection)
+// 3) Breath after ornament (handled later as tail-rest inside the slot)
+// -----------------------------
+
+// Phrase-end rest: only consider if we're at/near the end of the phrase and have budget.
+const isPhraseEndingSlot = beatsRemainingInPhrase <= duration + 0.0001;
+if (budgetLeft && isPhraseEndingSlot) {
+  if (Math.random() < silencePlan.pPhraseEndRest) {
+    // Rest for the whole slot.
+    silenceState.budgetUsed += 1;
+    currentBeat += duration;
+    continue;
+  }
+}
+
         // ----- NEW: optional rests -----
     // Demo rule: small chance of a rest, but avoid resting on strong beats too often.
     //const isStrongBeat = Math.abs(currentBeat - Math.round(currentBeat)) < 0.001;
