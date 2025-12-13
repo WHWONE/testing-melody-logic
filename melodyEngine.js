@@ -422,8 +422,8 @@ export function generateMelody(config, rhythmSequence, chords) {
     }
 
     // ----- NEW: velocity variation -----
-    const isStrongBeat = Math.abs(currentBeat - Math.round(currentBeat)) < 0.001;
-    let velocity = isStrongBeat ? 115 : 85;
+const isStrongBeatForVel = Math.abs(currentBeat - Math.round(currentBeat)) < 0.001;
+let velocity = isStrongBeatForVel ? 115 : 85;
 
     const phraseProgress =
       (currentBeat - phrase.startBeat) / (phrase.endBeat - phrase.startBeat);
