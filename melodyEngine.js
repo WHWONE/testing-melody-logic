@@ -548,15 +548,15 @@ let velocity = strongBeatForVel ? 115 : 85;
     const canGrace = duration >= 0.5; // don't try on tiny notes
     const addGrace = canGrace && Math.random() < 0.2; // 20% chance
     // NEW: slot timing controls for musical breathing
-// (for now, keep these at 0; later they come from phrase logic)
-const preRestBeats = 0;            // anticipatory silence (inside slot)
-const tailRestBeats = 0;           // breath after ornament (inside slot)
+    // (for now, keep these at 0; later they come from phrase logic)
+    const preRestBeats = 0;            // anticipatory silence (inside slot)
+    const tailRestBeats = 0;           // breath after ornament (inside slot)
 
-const slotStartBeat = currentBeat + preRestBeats;
-const playableDuration = Math.max(0.05, duration - preRestBeats);
+    const slotStartBeat = currentBeat + preRestBeats;
+    const playableDuration = Math.max(0.05, duration - preRestBeats);
 
 
-if (addGrace) {
+  if (addGrace) {
   const graceDuration = Math.min(0.25, playableDuration / 3);
 
   // Leave a tiny gap after ornamentation by shortening the main note
@@ -603,53 +603,7 @@ if (addGrace) {
     velocity
   });
 }
-if (addGrace) {
-  const graceDuration = Math.min(0.25, playableDuration / 3);
 
-  // Leave a tiny gap after ornamentation by shortening the main note
-  let effectiveTail = tailRestBeats;
-  let mainDuration = playableDuration - graceDuration - effectiveTail;
-
-  if (mainDuration < 0.05) {
-    effectiveTail = 0;
-    mainDuration = playableDuration - graceDuration;
-  }
-
-  const graceMidi = chosen.midi - 1; // half-step below
-  const graceVelocity = Math.max(40, Math.min(127, velocity - 15));
-
-  // quick pickup note
-  events.push({
-    startBeat: slotStartBeat,
-    duration: graceDuration,
-    midi: graceMidi,
-    velocity: graceVelocity
-  });
-
-  // main note slightly later
-  events.push({
-    startBeat: slotStartBeat + graceDuration,
-    duration: mainDuration,
-    midi: chosen.midi,
-    velocity
-  });
-} else {
-  // normal single note
-  let effectiveTail = tailRestBeats;
-  let noteDur = playableDuration - effectiveTail;
-
-  if (noteDur < 0.05) {
-    effectiveTail = 0;
-    noteDur = playableDuration;
-  }
-
-  events.push({
-    startBeat: slotStartBeat,
-    duration: noteDur,
-    midi: chosen.midi,
-    velocity
-  });
-}
 
 
     lastMidi = chosen.midi;
