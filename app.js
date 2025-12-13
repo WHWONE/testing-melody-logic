@@ -202,7 +202,7 @@ async function playMelody() {
   const secondsPerBeat = 60 / bpm;
 
   // Small lookahead so messages arrive before playback
-  const t0 = now() + 0.15;
+  const t0 = now() + 0.75;
 
   for (const ev of events) {
     const startTime = t0 + ev.startBeat * secondsPerBeat;
