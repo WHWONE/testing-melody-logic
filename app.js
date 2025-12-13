@@ -2,16 +2,11 @@
 // Main SPA-like controller for the Melody Engine demo
 
 import { generateMelody } from "./melodyEngine.js";
-import * as Tone from "https://cdn.jsdelivr.net/npm/tone@14.7.77/+esm";
-
-// ---------- Tone.js synth + state ----------
-
-const synth = new Tone.Synth({
-  oscillator: { type: "sine" },
-  envelope: { attack: 0.01, decay: 0.1, sustain: 0.3, release: 0.4 }
-}).toDestination();
+import { initAudio, ensureRunning, now, playNoteAt } from "./audioEngine.js";
 
 let lastGeneratedMelody = null;
+
+
 
 // ---------- DOM refs ----------
 
