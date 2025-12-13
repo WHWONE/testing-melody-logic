@@ -219,14 +219,7 @@ async function playMelody() {
 }
 
 
-  // Stop transport after the phrase is done
-  const totalDurationSec = totalBeats * secondsPerBeat + 1;
-  Tone.Transport.scheduleOnce(() => {
-    Tone.Transport.stop();
-  }, totalDurationSec);
 
-  Tone.Transport.start();
-}
 
 // ---------- Tab behavior ----------
 
