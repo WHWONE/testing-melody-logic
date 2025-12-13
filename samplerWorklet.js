@@ -32,6 +32,10 @@ const startFrame = Math.max(desiredStart, currentFrame + safetyFrames);
 // Duration in frames
 const durFrames = Math.max(1, Math.floor((msg.dur || 0.25) * sampleRate));
 
+// Minimum “hold” so ornaments don’t vanish (try 70–90ms)
+const minHoldFrames = Math.floor(0.08 * sampleRate); // 80 ms
+const heldDurFrames = Math.max(durFrames, minHoldFrames);
+
 
       // Handle sample-rate mismatch: playback needs factor (sampleSR / contextSR)
       const srFactor = s.sr / sampleRate;
@@ -43,7 +47,7 @@ const durFrames = Math.max(1, Math.floor((msg.dur || 0.25) * sampleRate));
         pos: 0, // in sample frames (float)
         rate: (msg.rate || 1) * srFactor,
         startFrame,
-        stopFrame: startFrame + durFrames,
+        stopFrame: startFrame + heldDurFrames,
         vel: msg.vel ?? 0.8,
         // Simple ADSR (seconds)
         a: 0.004,
