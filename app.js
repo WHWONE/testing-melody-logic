@@ -42,13 +42,155 @@ function getRhythmSequence(preset) {
         1, 1, 2
       ];
 
-case "dotted-groove":
-  return [
-    1, 0.75, 0.25, 1.5, 
-    0.5, 0.5, 0.5, 1, 
-    0.75, 0.75, 0.5, 1, 
-    1, 0.5, 0.5, 2
-  ];
+    case "dotted-groove":
+      return [
+        1, 0.75, 0.25, 1.5,
+        0.5, 0.5, 0.5, 1,
+        0.75, 0.75, 0.5, 1,
+        1, 0.5, 0.5, 2
+      ];
+
+    case "swing":
+      return [
+        1, 0.5, 0.5, 1,
+        1, 0.75, 0.25, 1,
+        1, 0.5, 0.5, 1,
+        1, 0.75, 0.25, 2
+      ];
+
+    case "triplet-feel":
+      return [
+        0.33, 0.33, 0.33, 1,
+        0.5, 0.5, 1, 1,
+        0.33, 0.33, 0.33, 1,
+        1, 1, 0.5, 0.5
+      ];
+
+    // ----------------------------
+    // NEW: 6 varied presets
+    // ----------------------------
+
+    case "breath-cadence": {
+      const out = [];
+      let t = 0;
+      const total = 16;
+
+      while (t < total - 1e-9) {
+        let d;
+        const r = Math.random();
+
+        if (r < 0.20) d = 1.5;
+        else if (r < 0.65) d = 1.0;
+        else d = 0.5;
+
+        if (t + d > total) d = total - t;
+        out.push(d);
+        t += d;
+      }
+      return out;
+    }
+
+    case "hesitant-pulse": {
+      const out = [];
+      let t = 0;
+      const total = 16;
+
+      while (t < total - 1e-9) {
+        let d;
+        const r = Math.random();
+
+        if (r < 0.45) d = 1.0;
+        else if (r < 0.85) d = 0.5;
+        else d = 2.0;
+
+        if (t + d > total) d = total - t;
+        out.push(d);
+        t += d;
+      }
+      return out;
+    }
+
+    case "burst-drift": {
+      const out = [];
+      let t = 0;
+      const total = 16;
+
+      while (t < total - 1e-9) {
+        const r = Math.random();
+
+        if (r < 0.25 && t + 1 <= total + 1e-9) {
+          out.push(0.25, 0.25, 0.25, 0.25);
+          t += 1.0;
+          continue;
+        }
+
+        let d = r < 0.70 ? 1.0 : 2.0;
+        if (t + d > total) d = total - t;
+        out.push(d);
+        t += d;
+      }
+      return out;
+    }
+
+    case "motoric-8ths":
+      return new Array(32).fill(0.5);
+
+    case "call-response": {
+      const out = [];
+      const total = 16;
+      let t = 0;
+
+      while (t < 8 - 1e-9) {
+        let d = Math.random() < 0.65 ? 0.5 : 1.0;
+        if (t + d > 8) d = 8 - t;
+        out.push(d);
+        t += d;
+      }
+
+      while (t < total - 1e-9) {
+        let d = Math.random() < 0.60 ? 1.0 : 2.0;
+        if (t + d > total) d = total - t;
+        out.push(d);
+        t += d;
+      }
+
+      return out;
+    }
+
+    case "triplet-waves": {
+      const out = [];
+      let t = 0;
+      const total = 16;
+      const third = 1 / 3;
+
+      while (t < total - 1e-9) {
+        const r = Math.random();
+
+        if (r < 0.40 && t + 1 <= total + 1e-9) {
+          out.push(third, third, third);
+          t += 1.0;
+        } else if (r < 0.70) {
+          out.push(1.0);
+          t += 1.0;
+        } else {
+          out.push(0.5, 0.5);
+          t += 1.0;
+        }
+      }
+
+      const sum = out.reduce((a, b) => a + b, 0);
+      if (sum > total + 1e-6) out[out.length - 1] -= (sum - total);
+
+      return out;
+    }
+
+    case "waltz":
+      return [
+        1, 1, 1,
+        1, 0.5, 0.5,
+        1, 1, 1,
+        0.5, 0.5, 1
+      ];
 
     case "default":
     default:
@@ -58,66 +200,9 @@ case "dotted-groove":
         1, 1, 0.5, 0.5,
         2, 1, 1, 2
       ];
-
-case "swing":
-  return [
-    1, 0.5, 0.5, 1, 
-    1, 0.75, 0.25, 1, 
-    1, 0.5, 0.5, 1, 
-    1, 0.75, 0.25, 2
-  ];
-
-case "triplet-feel":
-  return [
-    0.33, 0.33, 0.33, 1, 
-    0.5, 0.5, 1, 1, 
-    0.33, 0.33, 0.33, 1, 
-    1, 1, 0.5, 0.5
-  ];
-case "breath-cadence": {
-  // Mostly quarters/eighths with occasional held "breaths"
-  const out = [];
-  let t = 0;
-  const total = 16;
-
-  while (t < total - 1e-9) {
-    let d;
-    const r = Math.random();
-
-    if (r < 0.20) d = 1.5;       // dotted-quarter breath
-    else if (r < 0.65) d = 1.0;  // quarter
-    else d = 0.5;                // eighth
-
-    if (t + d > total) d = total - t;
-    out.push(d);
-    t += d;
-  }
-  return out;
-}
-
-case "hesitant-pulse": {
-  // More space, uneven phrasing
-  const out = [];
-  let t = 0;
-  const total = 16;
-
-  while (t < total - 1e-9) {
-    let d;
-    const r = Math.random();
-
-    if (r < 0.45) d = 1.0;
-    else if (r < 0.85) d = 0.5;
-
-case "waltz":
-  return [
-    1, 1, 1,   // Bar 1: three quarter notes
-    1, 0.5, 0.5, // Bar 2: quarter, two eighths
-    1, 1, 1,   // Bar 3: three quarter notes
-    0.5, 0.5, 1  // Bar 4: two eighths, quarter
-  ];
-
   }
 }
+
 
 // ---------- Main generate function ----------
 
