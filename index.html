@@ -223,6 +223,37 @@
         </div>
 
         <div class="form-group">
+          <label for="prog-preset">
+            <select id="prog-preset">
+              <!-- Jazz / Functional -->
+              <option value="jazz-turnaround">Jazz: I–vi–ii–V</option>
+              <option value="ii-v-i">Jazz: ii–V–I</option>
+              <option value="three-step-ii-v-i">3-Step: ii–V–I</option>
+
+              <!-- Pop / Familiar -->
+              <option value="pop-1">Pop: I–V–vi–IV</option>
+              <option value="pop-2">Pop: vi–IV–I–V</option>
+              <option value="three-step-i-iv-v">3-Step: I–IV–V</option>
+
+              <!-- Neo-Soul / R&B-ish (jazzy-adjacent, diatonic triads) -->
+              <option value="neosoul-1">Neo-Soul: I–iii–IV–ii</option>
+              <option value="neosoul-2">Neo-Soul: I–vi–IV–V</option>
+              <option value="neosoul-3">Neo-Soul: vi–ii–V–I</option>
+              <option value="neosoul-4">Neo-Soul: IV–I–V–vi</option>
+              <option value="neosoul-5">Neo-Soul: I–IV–ii–V</option>
+              <option value="neosoul-6">Neo-Soul: ii–IV–I–V</option>
+
+              <!-- Slow Jams -->
+              <option value="slowjam-1">Slow Jam: I–IV–I–V</option>
+              <option value="slowjam-2">Slow Jam: I–ii–IV–I</option>
+
+              <!-- Utility / Structural -->
+              <option value="four-on-one">Tonic Pedal: I–I–I–I</option>
+              <option value="circle-4ths">Circle-ish: I–IV–vii°–iii–vi–ii–V–I</option>
+           </select>
+        </div>
+        
+        <div class="form-group">
           <label for="rhythm-preset">Rhythm Preset</label>
           <select id="rhythm-preset">
             <option value="default">Default Test</option>
