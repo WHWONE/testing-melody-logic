@@ -23,6 +23,16 @@ const jsonOutputEl = document.getElementById("json-output");
 const tabs = document.querySelectorAll(".tab");
 const panelVisual = document.getElementById("panel-visual");
 const panelJson = document.getElementById("panel-json");
+const tempoInput = document.getElementById("tempo");
+const tempoLabel = document.getElementById("tempo-label");
+
+if (tempoInput && tempoLabel) {
+  tempoLabel.textContent = tempoInput.value;
+  tempoInput.addEventListener("input", () => {
+    tempoLabel.textContent = tempoInput.value;
+  });
+}
+
 
 // ---------- Rhythm presets ----------
 
