@@ -166,6 +166,93 @@ function getRhythmSequence(preset) {
 
       return out;
     }
+    case "laidback-pocket": {
+  // Neo-Soul / R&B pocket: mostly eighths + quarters, rare 16th pickup
+  const out = [];
+  let t = 0;
+  const total = 16;
+
+  while (t < total - 1e-9) {
+    const r = Math.random();
+    let d;
+
+    if (r < 0.55) d = 0.5;       // eighth
+    else if (r < 0.90) d = 1.0;  // quarter
+    else d = 0.25;               // rare pickup (16th)
+
+    if (t + d > total) d = total - t;
+    out.push(d);
+    t += d;
+  }
+
+  return out;
+}
+
+case "offbeat-warmth": {
+  // Slightly syncopated warmth: dotted-eighth pops in for groove flavor
+  const out = [];
+  let t = 0;
+  const total = 16;
+
+  while (t < total - 1e-9) {
+    let d;
+    const r = Math.random();
+
+    if (r < 0.45) d = 0.5;        // eighth
+    else if (r < 0.75) d = 1.0;   // quarter
+    else d = 0.75;                // dotted-eighth feel
+
+    if (t + d > total) d = total - t;
+    out.push(d);
+    t += d;
+  }
+
+  return out;
+}
+
+case "slow-bounce": {
+  // Head-nod bounce: space without silence (holds instead of gaps)
+  const out = [];
+  let t = 0;
+  const total = 16;
+
+  while (t < total - 1e-9) {
+    const r = Math.random();
+    let d;
+
+    if (r < 0.40) d = 1.0;       // quarter
+    else if (r < 0.75) d = 0.5;  // eighth
+    else d = 1.5;                // dotted-quarter hold
+
+    if (t + d > total) d = total - t;
+    out.push(d);
+    t += d;
+  }
+
+  return out;
+}
+
+case "neo-shuffle-soft": {
+  // Not full swing—just a relaxed long-short shuffle flavor
+  const out = [];
+  let t = 0;
+  const total = 16;
+
+  while (t < total - 1e-9) {
+    const r = Math.random();
+
+    // 40% of beats: long-short (0.75 + 0.25), otherwise straight (0.5 + 0.5)
+    if (r < 0.40 && t + 1 <= total + 1e-9) {
+      out.push(0.75, 0.25);
+      t += 1.0;
+    } else {
+      out.push(0.5, 0.5);
+      t += 1.0;
+    }
+  }
+
+  return out;
+}
 
     case "triplet-waves": {
       const out = [];
