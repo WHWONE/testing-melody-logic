@@ -14,6 +14,8 @@ const keySelect = document.getElementById("key-select");
 const rangeMinInput = document.getElementById("range-min");
 const rangeMaxInput = document.getElementById("range-max");
 const rhythmPresetSelect = document.getElementById("rhythm-preset");
+const progPresetSelect = document.getElementById("prog-preset");
+
 const generateBtn = document.getElementById("btn-generate");
 const playBtn = document.getElementById("btn-play");
 
