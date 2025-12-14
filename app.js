@@ -33,6 +33,122 @@ if (tempoInput && tempoLabel) {
   });
 }
 
+// ----------------------------------------
+// Chord progression helpers + presets
+// ----------------------------------------
+
+function triadDegrees(rootDeg) {
+  // Build diatonic triad degrees in-scale: root, third, fifth
+  return [
+    rootDeg % 7,
+    (rootDeg + 2) % 7,
+    (rootDeg + 4) % 7
+  ];
+}
+
+function getChordProgressionPreset(presetId, totalBeats) {
+  const id = presetId || "jazz-turnaround";
+
+  // Progressions as SCALE-DEGREE ROOTS
+  // (0=I, 1=ii, 2=iii, 3=IV, 4=V, 5=vi, 6=vii°)
+  let roots;
+
+  switch (id) {
+
+    // ----------------------------
+    // Jazz / Functional
+    // ----------------------------
+    case "jazz-turnaround":
+      roots = [0, 5, 1, 4]; // I–vi–ii–V
+      break;
+
+    case "ii-v-i":
+      roots = [1, 4, 0, 0]; // ii–V–I–I
+      break;
+
+    case "three-step-ii-v-i":
+      roots = [1, 4, 0]; // ii–V–I
+      break;
+
+    // ----------------------------
+    // Pop / Familiar
+    // ----------------------------
+    case "pop-1":
+      roots = [0, 4, 5, 3]; // I–V–vi–IV
+      break;
+
+    case "pop-2":
+      roots = [5, 3, 0, 4]; // vi–IV–I–V
+      break;
+
+    case "three-step-i-iv-v":
+      roots = [0, 3, 4]; // I–IV–V
+      break;
+
+    // ----------------------------
+    // Neo-Soul / R&B-ish (jazzy-adjacent)
+    // ----------------------------
+    case "neosoul-1":
+      roots = [0, 2, 3, 1]; // I–iii–IV–ii
+      break;
+
+    case "neosoul-2":
+      roots = [0, 5, 3, 4]; // I–vi–IV–V
+      break;
+
+    case "neosoul-3":
+      roots = [5, 1, 4, 0]; // vi–ii–V–I
+      break;
+
+    case "neosoul-4":
+      roots = [3, 0, 4, 5]; // IV–I–V–vi
+      break;
+
+    case "neosoul-5":
+      roots = [0, 3, 1, 4]; // I–IV–ii–V
+      break;
+
+    case "neosoul-6":
+      roots = [1, 3, 0, 4]; // ii–IV–I–V
+      break;
+
+    // ----------------------------
+    // Slow Jams
+    // ----------------------------
+    case "slowjam-1":
+      roots = [0, 3, 0, 4]; // I–IV–I–V
+      break;
+
+    case "slowjam-2":
+      roots = [0, 1, 3, 0]; // I–ii–IV–I
+      break;
+
+    // ----------------------------
+    // Utility / Structural
+    // ----------------------------
+    case "four-on-one":
+      roots = [0, 0, 0, 0]; // I–I–I–I
+      break;
+
+    case "circle-4ths":
+      roots = [0, 3, 6, 2, 5, 1, 4, 0]; // I–IV–vii°–iii–vi–ii–V–I
+      break;
+
+    default:
+      roots = [0, 5, 1, 4];
+      break;
+  }
+
+  const seg = totalBeats / roots.length;
+
+  return roots.map((r, i) => ({
+    startBeat: i * seg,
+    endBeat: (i + 1) * seg,
+    chordDegrees: triadDegrees(r)
+  }));
+}
+
+
 
 // ---------- Rhythm presets ----------
 
