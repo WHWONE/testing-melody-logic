@@ -511,7 +511,7 @@ if (budgetLeft && isPhraseEndingSlot) {
 // Anticipatory silence before cadences
 // (tiny rest *inside* this slot, before the note group)
 // -----------------------------
-let preRestBeats = 0;
+
 const canPreRest = budgetLeft && duration >= 0.5;
 const nearingPhraseEnd = phraseProgress > 0.70;
 const cadenceTarget = chosen.degree === phrase.targetScaleDegree;
