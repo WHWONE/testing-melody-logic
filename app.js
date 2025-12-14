@@ -428,13 +428,9 @@ function regenerateMelody() {
   const rhythmSequence = getRhythmSequence(rhythmPreset);
   const totalBeats = rhythmSequence.reduce((sum, v) => sum + v, 0);
 
-  // Simple I–ii–V–I chord pattern in scale degrees
-  const chords = [
-    { startBeat: 0, endBeat: totalBeats / 4, chordDegrees: [0, 2, 4] }, // I
-    { startBeat: totalBeats / 4, endBeat: totalBeats / 2, chordDegrees: [1, 3, 5] }, // ii
-    { startBeat: totalBeats / 2, endBeat: (3 * totalBeats) / 4, chordDegrees: [4, 6, 1] }, // V
-    { startBeat: (3 * totalBeats) / 4, endBeat: totalBeats, chordDegrees: [0, 2, 4] } // I
-  ];
+  const selectedProg = progPresetSelect ? progPresetSelect.value : "jazz-turnaround";
+  const chords = getChordProgressionPreset(selectedProg, totalBeats);
+
 
   const config = {
     keyRootMidi,
