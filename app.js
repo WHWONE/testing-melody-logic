@@ -326,7 +326,7 @@ async function playMelody() {
   await initAudio();
   await ensureRunning();
 
-  const bpm = 120;
+  const bpm = tempoInput ? parseFloat(tempoInput.value) : 120;
   const secondsPerBeat = 60 / bpm;
 
   // Small lookahead so messages arrive before playback
