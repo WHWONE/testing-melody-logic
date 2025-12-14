@@ -74,6 +74,39 @@ case "triplet-feel":
     0.33, 0.33, 0.33, 1, 
     1, 1, 0.5, 0.5
   ];
+case "breath-cadence": {
+  // Mostly quarters/eighths with occasional held "breaths"
+  const out = [];
+  let t = 0;
+  const total = 16;
+
+  while (t < total - 1e-9) {
+    let d;
+    const r = Math.random();
+
+    if (r < 0.20) d = 1.5;       // dotted-quarter breath
+    else if (r < 0.65) d = 1.0;  // quarter
+    else d = 0.5;                // eighth
+
+    if (t + d > total) d = total - t;
+    out.push(d);
+    t += d;
+  }
+  return out;
+}
+
+case "hesitant-pulse": {
+  // More space, uneven phrasing
+  const out = [];
+  let t = 0;
+  const total = 16;
+
+  while (t < total - 1e-9) {
+    let d;
+    const r = Math.random();
+
+    if (r < 0.45) d = 1.0;
+    else if (r < 0.85) d = 0.5;
 
 case "waltz":
   return [
