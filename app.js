@@ -149,6 +149,24 @@ function getChordProgressionPreset(presetId, totalBeats) {
   }));
 }
 
+// ----------------------------------------
+// Rhythm length safety clamp
+// ----------------------------------------
+function clampRhythmToTotal(rhythm, targetBeats = 16) {
+  const out = [];
+  let sum = 0;
+
+  for (let d of rhythm) {
+    if (sum + d >= targetBeats) {
+      out.push(targetBeats - sum);
+      break;
+    }
+    out.push(d);
+    sum += d;
+  }
+
+  return out;
+}
 
 
 // ---------- Rhythm presets ----------
