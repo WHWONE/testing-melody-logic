@@ -17,6 +17,7 @@ const rhythmPresetSelect = document.getElementById("rhythm-preset");
 const progPresetSelect = document.getElementById("prog-preset");
 const generateBtn = document.getElementById("btn-generate");
 const playBtn = document.getElementById("btn-play");
+const barsSelect = document.getElementById("bars");
 
 const pianoRollEl = document.getElementById("piano-roll");
 const jsonOutputEl = document.getElementById("json-output");
