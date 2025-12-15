@@ -446,7 +446,9 @@ function regenerateMelody() {
   const rhythmPreset = rhythmPresetSelect.value;
 
   let rhythmSequence = getRhythmSequence(rhythmPreset);
-rhythmSequence = clampRhythmToTotal(rhythmSequence, 16);
+const bars = barsSelect ? parseInt(barsSelect.value, 10) : 4;
+rhythmSequence = clampRhythmToTotal(rhythmSequence, bars * 4);
+
   const totalBeats = rhythmSequence.reduce((sum, v) => sum + v, 0);
   //console.log("Rhythm total beats:", rhythmSequence.reduce((a,b)=>a+b,0));
 
