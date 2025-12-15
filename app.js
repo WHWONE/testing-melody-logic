@@ -444,7 +444,8 @@ function regenerateMelody() {
   const maxMidi = parseInt(rangeMaxInput.value, 10);
   const rhythmPreset = rhythmPresetSelect.value;
 
-  const rhythmSequence = getRhythmSequence(rhythmPreset);
+  let rhythmSequence = getRhythmSequence(rhythmPreset);
+rhythmSequence = clampRhythmToTotal(rhythmSequence, 16);
   const totalBeats = rhythmSequence.reduce((sum, v) => sum + v, 0);
 
   const selectedProg = progPresetSelect ? progPresetSelect.value : "jazz-turnaround";
