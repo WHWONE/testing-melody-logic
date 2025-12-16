@@ -386,14 +386,20 @@ export function generateMelody(config, rhythmSequence, chords) {
 
   const events = [];
   let currentBeat = 0;
-  let lastMidi = null;
-  let lastDegree = null;
+
+  // Allow seeding from a previous phrase (tiny hook)
+  const initial = config.initialState || null;
+
+  let lastMidi = initial?.lastMidi ?? null;
+  let lastDegree = initial?.lastDegree ?? null;
 
   // memory object to track across notes
   config.memory = {
     lastIntervalSemitones: null,
-    phraseStartMidi: null
+    phraseStartMidi: null,
+    ...(initial?.memory || {})
   };
+
 
   // Track phrase-level "silence budget" so we don't overdo rests.
 const silenceStateByPhrase = new Map();
