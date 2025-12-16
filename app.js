@@ -488,12 +488,14 @@ function regenerateMelody() {
   const maxMidi = parseInt(rangeMaxInput.value, 10);
   const rhythmPreset = rhythmPresetSelect.value;
 
-  let rhythmSequence = getRhythmSequence(rhythmPreset);
   const bars = barsSelect ? parseInt(barsSelect.value, 10) : 4;
-  rhythmSequence = clampRhythmToTotal(rhythmSequence, bars * 4);
-   console.log("barsSelect:", barsSelect, "barsSelect.value:", barsSelect?.value);
+  const targetBeats = bars * 4;
+
+  let rhythmSequence = buildRhythmToTarget(rhythmPreset, targetBeats);
 
   const totalBeats = rhythmSequence.reduce((sum, v) => sum + v, 0);
+    console.log("LAST RHYTHM VALUES:", rhythmSequence.slice(-8));
+
   console.log("Rhythm total beats:", rhythmSequence.reduce((a,b)=>a+b,0));
 
   const selectedProg = progPresetSelect ? progPresetSelect.value : "jazz-turnaround";
