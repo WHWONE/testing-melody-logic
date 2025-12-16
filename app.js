@@ -463,6 +463,22 @@ case "neo-shuffle-soft": {
   }
 }
 
+function buildRhythmToTarget(rhythmPreset, targetBeats) {
+  const out = [];
+  let sum = 0;
+
+  while (sum < targetBeats - 1e-9) {
+    const chunk = getRhythmSequence(rhythmPreset); // re-call gives variation on random presets
+    for (const d of chunk) {
+      out.push(d);
+      sum += d;
+      if (sum >= targetBeats - 1e-9) break;
+    }
+  }
+
+  // Trim final overhang cleanly to exactly targetBeats
+  return clampRhythmToTotal(out, targetBeats);
+}
 
 // ---------- Main generate function ----------
 
