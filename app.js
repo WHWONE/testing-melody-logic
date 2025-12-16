@@ -595,15 +595,21 @@ function renderPianoRoll(result, minMidi, maxMidi, totalBeats) {
   grid.className = "piano-roll-grid";
   pianoRollEl.appendChild(grid);
 
-  // Beat lines
+  // Beat lines + measure lines (4/4 for now)
+  const beatsPerBar = 4;
   const beatCount = Math.ceil(totalBeats);
+
   for (let b = 0; b <= beatCount; b++) {
     const line = document.createElement("div");
-    line.className = "beat-line";
+
+    // Every beat gets a thin line; every bar gets a thicker line
+    line.className = (b % beatsPerBar === 0) ? "beat-line measure-line" : "beat-line";
+
     const x = (b / totalBeats) * width;
     line.style.left = x + "px";
     grid.appendChild(line);
   }
+
 
   const pitchRange = maxMidi - minMidi || 1;
 
