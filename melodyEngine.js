@@ -623,6 +623,11 @@ if (phraseProgressVel > 0.7) {
     events,
     phrases,
     motifs,
-    motifPlan
+    motifPlan,
+    endingState: {
+      lastMidi,
+      lastDegree,
+      memory: { ...config.memory }
+    }
   };
 }
