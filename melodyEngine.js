@@ -283,6 +283,37 @@ function scoreCandidatePitch({
     }
   }
 
+  // 3.5) Contour bias (tiny knob)
+  // Nudges direction (up/down) without forcing a pattern.
+  if (config.contourMode && config.contourMode !== "none" && lastMidi !== null && phrase) {
+    const strength = Math.max(0, Math.min(1, config.contourStrength ?? 0));
+    if (strength > 0) {
+      const phraseProgress =
+        (beat - phrase.startBeat) / Math.max(0.0001, (phrase.endBeat - phrase.startBeat));
+
+      // desired direction: +1 up, -1 down, 0 no preference
+      let desiredDir = 0;
+      if (config.contourMode === "rising") desiredDir = +1;
+      else if (config.contourMode === "falling") desiredDir = -1;
+      else if (config.contourMode === "arch") desiredDir = (phraseProgress < 0.5) ? +1 : -1;
+
+      const thisInt = candidateMidi - lastMidi;
+      const thisDir = Math.sign(thisInt);
+
+      if (thisDir === 0) {
+        // avoid too many repeats when contour is active
+        score *= (1 - 0.25 * strength);
+      } else if (thisDir === desiredDir) {
+        // reward moving in the desired direction
+        score *= (1 + 0.8 * strength);
+      } else {
+        // lightly discourage moving against the desired direction
+        score *= (1 - 0.4 * strength);
+      }
+    }
+  }
+
+  
   // 4) Phrase targeting near phrase end
   const phraseProgress =
     (beat - phrase.startBeat) / (phrase.endBeat - phrase.startBeat);
