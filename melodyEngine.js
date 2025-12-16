@@ -380,25 +380,27 @@ export function generateMelody(config, rhythmSequence, chords) {
   const scalePitches = buildScalePitches(config.keyRootMidi, 5);
 
   // Phrase & motif setup
-  const phrases = buildPhrasePlan(totalBeats, config);
-  const motifs = buildMotifs(config);
-  const motifPlan = buildMotifPlan(phrases, motifs);
+const phrases = buildPhrasePlan(totalBeats, config);
 
-  const events = [];
-  let currentBeat = 0;
+const motifs = buildMotifs(config);
+const motifPlan = buildMotifPlan(phrases, motifs);
 
-  // Allow seeding from a previous phrase (tiny hook)
-  const initial = config.initialState || null;
+const events = [];
+let currentBeat = 0;
 
-  let lastMidi = initial?.lastMidi ?? null;
-  let lastDegree = initial?.lastDegree ?? null;
+// Tiny hook: allow seeding phrase 2 from phrase 1 ending state
+const initial = config.initialState || null;
 
-  // memory object to track across notes
-  config.memory = {
-    lastIntervalSemitones: null,
-    phraseStartMidi: null,
-    ...(initial?.memory || {})
-  };
+let lastMidi = initial?.lastMidi ?? null;
+let lastDegree = initial?.lastDegree ?? null;
+
+// memory object to track across notes
+config.memory = {
+  lastIntervalSemitones: null,
+  phraseStartMidi: null,
+  ...(initial?.memory || {})
+};
+
 
 
   // Track phrase-level "silence budget" so we don't overdo rests.
