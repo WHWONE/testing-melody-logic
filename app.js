@@ -21,6 +21,21 @@ const barsSelect = document.getElementById("bars");
 const contourModeSelect = document.getElementById("contour-mode");
 const contourStrengthInput = document.getElementById("contour-strength");
 const contourStrengthLabel = document.getElementById("contour-strength-label");
+// --- Contour Strength label live update ---
+if (contourStrengthInput && contourStrengthLabel) {
+  const updateContourLabel = () => {
+    contourStrengthLabel.textContent = contourStrengthInput.value;
+  };
+
+  updateContourLabel(); // set once on load
+  contourStrengthInput.addEventListener("input", updateContourLabel);
+  contourStrengthInput.addEventListener("change", updateContourLabel);
+} else {
+  console.warn("Contour strength elements not found:", {
+    contourStrengthInput,
+    contourStrengthLabel
+  });
+}
 
 console.log("barsSelect exists?", !!barsSelect, "value:", barsSelect?.value);
 const pianoRollEl = document.getElementById("piano-roll");
