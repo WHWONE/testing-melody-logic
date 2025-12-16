@@ -626,6 +626,8 @@ if (phraseProgressVel > 0.7) {
     phrases,
     motifs,
     motifPlan,
+
+    // Tiny hook: expose final melodic state for continuation
     endingState: {
       lastMidi,
       lastDegree,
