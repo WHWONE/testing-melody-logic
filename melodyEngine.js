@@ -557,7 +557,7 @@ if (phraseProgressVel > 0.7) {
 
     // ----- NEW: optional grace note -----
     const canGrace = duration >= 0.5; // don't try on tiny notes
-    const addGrace = canGrace && Math.random() < 0.2; // 20% chance
+    const addGrace = canGrace && Math.random() < 0.15; // 15% chance
     // NEW: slot timing controls for musical breathing
     // (for now, keep these at 0; later they come from phrase logic)
 
