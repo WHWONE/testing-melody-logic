@@ -157,17 +157,25 @@ function clampRhythmToTotal(rhythm, targetBeats = 16) {
   const out = [];
   let sum = 0;
 
+  // Copy until we hit or exceed target
   for (let d of rhythm) {
     if (sum + d >= targetBeats) {
       out.push(targetBeats - sum);
+      sum = targetBeats;
       break;
     }
     out.push(d);
     sum += d;
   }
 
+  // Pad if we ended early
+  if (sum < targetBeats) {
+    out.push(targetBeats - sum);
+  }
+
   return out;
 }
+
 
 
 // ---------- Rhythm presets ----------
