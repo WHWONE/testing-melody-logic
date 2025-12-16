@@ -491,7 +491,64 @@ function regenerateMelody() {
     totalBeats
   };
 
-  const result = generateMelody(config, rhythmSequence, chords);
+    // If we're longer than 4 bars (16 beats), generate in two connected halves
+  let result;
+
+  if (totalBeats > 16.0001) {
+    const splitBeat = 16;
+
+    // Split rhythm into A (0..16) and B (16..end)
+    const rhythmA = [];
+    const rhythmB = [];
+    let acc = 0;
+
+    for (const d of rhythmSequence) {
+      if (acc < splitBeat - 1e-9) {
+        if (acc + d <= splitBeat + 1e-9) {
+          rhythmA.push(d);
+        } else {
+          // split one duration across the boundary
+          const aPart = splitBeat - acc;
+          const bPart = d - aPart;
+          if (aPart > 1e-9) rhythmA.push(aPart);
+          if (bPart > 1e-9) rhythmB.push(bPart);
+        }
+      } else {
+        rhythmB.push(d);
+      }
+      acc += d;
+    }
+
+    // Slice chords into the same windows (and shift each window to 0-based beats)
+    const chordsA = sliceChordsForWindow(chords, 0, splitBeat);
+    const chordsB = sliceChordsForWindow(chords, splitBeat, totalBeats);
+
+    // Generate phrase A
+    const configA = { ...config, totalBeats: splitBeat };
+    const resA = generateMelody(configA, rhythmA, chordsA);
+
+    // Generate phrase B with a tiny hook: seed from phrase A ending state
+    const configB = {
+      ...config,
+      totalBeats: totalBeats - splitBeat,
+      initialState: resA.endingState
+    };
+    const resB = generateMelody(configB, rhythmB, chordsB);
+
+    // Shift phrase B events forward by 16 beats so they land in bars 5–8
+    const shiftedBEvents = resB.events.map((ev) => ({
+      ...ev,
+      startBeat: ev.startBeat + splitBeat
+    }));
+
+    result = {
+      events: [...resA.events, ...shiftedBEvents]
+    };
+  } else {
+    // Normal 4-bar generation
+    result = generateMelody(config, rhythmSequence, chords);
+  }
+
 
   // Store for playback
   lastGeneratedMelody = { ...result, totalBeats, minMidi, maxMidi };
