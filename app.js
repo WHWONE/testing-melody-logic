@@ -18,6 +18,10 @@ const progPresetSelect = document.getElementById("prog-preset");
 const generateBtn = document.getElementById("btn-generate");
 const playBtn = document.getElementById("btn-play");
 const barsSelect = document.getElementById("bars");
+const contourModeSelect = document.getElementById("contour-mode");
+const contourStrengthInput = document.getElementById("contour-strength");
+const contourStrengthLabel = document.getElementById("contour-strength-label");
+
 console.log("barsSelect exists?", !!barsSelect, "value:", barsSelect?.value);
 const pianoRollEl = document.getElementById("piano-roll");
 const jsonOutputEl = document.getElementById("json-output");
