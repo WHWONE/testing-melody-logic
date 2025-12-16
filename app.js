@@ -149,7 +149,26 @@ function getChordProgressionPreset(presetId, totalBeats) {
     chordDegrees: triadDegrees(r)
   }));
 }
+// ----------------------------------------
+// Chord slicing helper (for phrase windows)
+// ----------------------------------------
+function sliceChordsForWindow(chords, startBeat, endBeat) {
+  const out = [];
 
+  for (const c of chords) {
+    const s = Math.max(c.startBeat, startBeat);
+    const e = Math.min(c.endBeat, endBeat);
+    if (e > s) {
+      out.push({
+        startBeat: s - startBeat,
+        endBeat: e - startBeat,
+        chordDegrees: c.chordDegrees
+      });
+    }
+  }
+
+  return out;
+}
 // ----------------------------------------
 // Rhythm length safety clamp
 // ----------------------------------------
