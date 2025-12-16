@@ -506,12 +506,16 @@ function regenerateMelody() {
   const chords = getChordProgressionPreset(selectedProg, totalBeats);
 
 
-  const config = {
-    keyRootMidi,
-    minMidi,
-    maxMidi,
-    totalBeats
-  };
+const config = {
+  keyRootMidi,
+  minMidi,
+  maxMidi,
+  totalBeats,
+
+  contourMode: contourModeSelect ? contourModeSelect.value : "none",
+  contourStrength: contourStrengthInput ? parseFloat(contourStrengthInput.value) : 0.0
+};
+
 
     // If we're longer than 4 bars (16 beats), generate in two connected halves
   let result;
