@@ -145,12 +145,20 @@
         background: #020617;
         border-radius: 4px;
         border: 1px solid #1f2937;
-        overflow: hidden;
+        overflow-x: auto;
+        overflow-y: hidden;
+      }
+
+      .piano-roll-content {
+        position: relative;
+        height: 100%;
       }
 
       .piano-roll-grid {
         position: absolute;
         inset: 0;
+        pointer-events: none;
+        z-index: 1;
       }
 
       .piano-roll-grid .beat-line {
@@ -162,10 +170,38 @@
       }
 
       .measure-line {
-      /* thicker / more visible barline */
-      width: 2px;
-      opacity: 1;
-     }
+        /* thicker / more visible barline */
+        width: 2px;
+        opacity: 1;
+      }
+
+      .piano-roll-measure-layer {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        font-size: 10px;
+        color: #9ca3af;
+        z-index: 3;
+      }
+
+      .measure-marker {
+        position: absolute;
+        top: 0;
+        height: 18px;
+        border-left: 1px solid #1f2937;
+        box-sizing: border-box;
+      }
+
+      .measure-label {
+        position: absolute;
+        top: 2px;
+        left: 4px;
+        background: rgba(2, 6, 23, 0.75);
+        padding: 2px 4px;
+        border-radius: 3px;
+        border: 1px solid #111827;
+        pointer-events: none;
+      }
 
       
       .piano-roll-note {
@@ -173,6 +209,7 @@
         border-radius: 3px;
         background: #4f46e5;
         opacity: 0.9;
+        z-index: 2;
       }
 
       .piano-roll-axis-label {

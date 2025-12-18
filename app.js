@@ -611,28 +611,61 @@ function renderPianoRoll(result, minMidi, maxMidi, totalBeats) {
   // Clear existing
   pianoRollEl.innerHTML = "";
 
-  const width = pianoRollEl.clientWidth || 400;
+  const viewportWidth = pianoRollEl.clientWidth || 400;
   const height = pianoRollEl.clientHeight || 260;
+  const beatsPerBar = 4;
+
+  // Simple hook to support zoom/scroll in the future without changing callers
+  const zoom = parseFloat(pianoRollEl.dataset.zoom || "1");
+  const timelineWidth = viewportWidth * Math.max(zoom, 1);
+  const beatToX = (beat) => (beat / totalBeats) * timelineWidth;
+
+  const rollContent = document.createElement("div");
+  rollContent.className = "piano-roll-content";
+  rollContent.style.width = `${beatToX(totalBeats)}px`;
+  pianoRollEl.appendChild(rollContent);
 
   const grid = document.createElement("div");
   grid.className = "piano-roll-grid";
-  pianoRollEl.appendChild(grid);
+  rollContent.appendChild(grid);
+
+  const measureLayer = document.createElement("div");
+  measureLayer.className = "piano-roll-measure-layer";
+  rollContent.appendChild(measureLayer);
+  const beatCount = Math.ceil(totalBeats);
+  const measureCount = Math.ceil(totalBeats / beatsPerBar);
 
   // Beat lines + measure lines (4/4 for now)
-  const beatsPerBar = 4;
-  const beatCount = Math.ceil(totalBeats);
-
   for (let b = 0; b <= beatCount; b++) {
     const line = document.createElement("div");
 
     // Every beat gets a thin line; every bar gets a thicker line
     line.className = (b % beatsPerBar === 0) ? "beat-line measure-line" : "beat-line";
 
-    const x = (b / totalBeats) * width;
-    line.style.left = x + "px";
+    line.style.left = beatToX(b) + "px";
     grid.appendChild(line);
   }
 
+  // Measure markers
+  for (let m = 0; m < measureCount; m++) {
+    const marker = document.createElement("div");
+    marker.className = "measure-marker";
+
+    const startBeat = m * beatsPerBar;
+    const endBeat = Math.min((m + 1) * beatsPerBar, totalBeats);
+    const left = beatToX(startBeat);
+    const width = Math.max(beatToX(endBeat) - left, 0);
+
+    marker.style.left = left + "px";
+    marker.style.width = width + "px";
+
+    const label = document.createElement("span");
+    label.className = "measure-label";
+    label.textContent = `Bar ${m + 1}`;
+    marker.appendChild(label);
+
+    measureLayer.appendChild(marker);
+  }
 
   const pitchRange = maxMidi - minMidi || 1;
 
@@ -641,8 +674,8 @@ function renderPianoRoll(result, minMidi, maxMidi, totalBeats) {
     const noteEl = document.createElement("div");
     noteEl.className = "piano-roll-note";
 
-    const x = (ev.startBeat / totalBeats) * width;
-    const w = (ev.duration / totalBeats) * width;
+    const x = beatToX(ev.startBeat);
+    const w = beatToX(ev.startBeat + ev.duration) - x;
 
     const relPitch = (ev.midi - minMidi) / pitchRange;
     const y = height - relPitch * height - 8;
@@ -653,10 +686,10 @@ function renderPianoRoll(result, minMidi, maxMidi, totalBeats) {
     noteEl.style.top = y + "px";
     noteEl.style.height = h + "px";
 
-    pianoRollEl.appendChild(noteEl);
+    rollContent.appendChild(noteEl);
   }
 
-  // Y-axis labels
+  // Y-axis labels (fixed to the viewport)
   const labelLow = document.createElement("div");
   labelLow.className = "piano-roll-axis-label";
   labelLow.style.bottom = "2px";
@@ -690,24 +723,24 @@ async function playMelody() {
   let count = 0;
 
   for (const ev of events) {
-  const startTime = t0 + ev.startBeat * secondsPerBeat;
-  const durationSec = ev.duration * secondsPerBeat;
-  const vel01 = ev.velocity !== undefined ? ev.velocity / 127 : 0.8;
+    const startTime = t0 + ev.startBeat * secondsPerBeat;
+    const durationSec = ev.duration * secondsPerBeat;
+    const vel01 = ev.velocity !== undefined ? ev.velocity / 127 : 0.8;
 
-  playNoteAt({
-    midi: ev.midi,
-    timeSec: startTime,
-    durationSec,
-    velocity01: vel01
-  });
+    playNoteAt({
+      midi: ev.midi,
+      timeSec: startTime,
+      durationSec,
+      velocity01: vel01
+    });
 
-  count++;
+    count++;
 
-  // Yield every 50 notes so postMessage delivery stays timely
-  if (count % 25 === 0) {
-    await new Promise(requestAnimationFrame);
+    // Yield every 50 notes so postMessage delivery stays timely
+    if (count % 25 === 0) {
+      await new Promise(requestAnimationFrame);
+    }
   }
-}
 }
 
 
