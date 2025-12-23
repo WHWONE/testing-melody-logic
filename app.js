@@ -613,17 +613,62 @@ function renderPianoRoll(result, minMidi, maxMidi, totalBeats) {
 
   const viewportWidth = pianoRollEl.clientWidth || 400;
   const height = pianoRollEl.clientHeight || 260;
+  const keyboardWidth = 72;
   const beatsPerBar = 4;
+  const totalNotes = maxMidi - minMidi + 1;
+  const noteHeight = height / Math.max(totalNotes, 1);
+  const timelineViewportWidth = Math.max(viewportWidth - keyboardWidth, 120);
 
   // Simple hook to support zoom/scroll in the future without changing callers
   const zoom = parseFloat(pianoRollEl.dataset.zoom || "1");
-  const timelineWidth = viewportWidth * Math.max(zoom, 1);
+  const timelineWidth = timelineViewportWidth * Math.max(zoom, 1);
   const beatToX = (beat) => (beat / totalBeats) * timelineWidth;
+
+  // Keyboard column (visual only)
+  const keyboard = document.createElement("div");
+  keyboard.className = "piano-roll-keyboard";
+  keyboard.style.height = `${height}px`;
+  pianoRollEl.appendChild(keyboard);
+
+  const isBlackKey = (midi) => {
+    const pc = midi % 12;
+    return [1, 3, 6, 8, 10].includes(pc);
+  };
+
+  for (let midi = minMidi; midi <= maxMidi; midi++) {
+    const key = document.createElement("div");
+    const black = isBlackKey(midi);
+    key.className = `piano-roll-key ${black ? "black" : "white"}`;
+
+    const index = midi - minMidi;
+    const top = height - (index + 1) * noteHeight;
+    key.style.top = `${top}px`;
+    key.style.height = `${noteHeight}px`;
+    key.style.setProperty("--note-height", `${noteHeight}px`);
+
+    if (black) {
+      const topFace = document.createElement("div");
+      topFace.className = "key-top";
+      const tail = document.createElement("div");
+      tail.className = "key-tail";
+
+      key.appendChild(topFace);
+      key.appendChild(tail);
+    }
+
+    keyboard.appendChild(key);
+  }
+
+  // Timeline wrapper
+  const timelineWrapper = document.createElement("div");
+  timelineWrapper.className = "piano-roll-timeline";
+  pianoRollEl.appendChild(timelineWrapper);
 
   const rollContent = document.createElement("div");
   rollContent.className = "piano-roll-content";
   rollContent.style.width = `${beatToX(totalBeats)}px`;
-  pianoRollEl.appendChild(rollContent);
+  rollContent.style.height = `${height}px`;
+  timelineWrapper.appendChild(rollContent);
 
   const grid = document.createElement("div");
   grid.className = "piano-roll-grid";
@@ -667,7 +712,10 @@ function renderPianoRoll(result, minMidi, maxMidi, totalBeats) {
     measureLayer.appendChild(marker);
   }
 
-  const pitchRange = maxMidi - minMidi || 1;
+  const midiToTop = (midi) => {
+    const index = midi - minMidi;
+    return height - (index + 1) * noteHeight;
+  };
 
   // Notes
   for (const ev of result.events) {
@@ -677,9 +725,8 @@ function renderPianoRoll(result, minMidi, maxMidi, totalBeats) {
     const x = beatToX(ev.startBeat);
     const w = beatToX(ev.startBeat + ev.duration) - x;
 
-    const relPitch = (ev.midi - minMidi) / pitchRange;
-    const y = height - relPitch * height - 8;
-    const h = 8;
+    const y = midiToTop(ev.midi);
+    const h = Math.max(noteHeight - 2, 4);
 
     noteEl.style.left = x + "px";
     noteEl.style.width = Math.max(w, 2) + "px";
@@ -694,12 +741,14 @@ function renderPianoRoll(result, minMidi, maxMidi, totalBeats) {
   labelLow.className = "piano-roll-axis-label";
   labelLow.style.bottom = "2px";
   labelLow.textContent = "MIDI " + minMidi;
+  labelLow.style.left = keyboardWidth + 8 + "px";
   pianoRollEl.appendChild(labelLow);
 
   const labelHigh = document.createElement("div");
   labelHigh.className = "piano-roll-axis-label";
   labelHigh.style.top = "2px";
   labelHigh.textContent = "MIDI " + maxMidi;
+  labelHigh.style.left = keyboardWidth + 8 + "px";
   pianoRollEl.appendChild(labelHigh);
 }
 
