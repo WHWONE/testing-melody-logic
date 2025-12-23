@@ -164,8 +164,6 @@
         right: 0;
         border: 1px solid #1f2937;
         box-sizing: border-box;
-        --note-height: 0px;
-        overflow: visible;
       }
 
       .piano-roll-key.white {
@@ -180,23 +178,6 @@
         z-index: 2;
         border-color: #0f172a;
         box-shadow: inset -1px -2px 3px rgba(0, 0, 0, 0.55);
-        height: calc(var(--note-height) * 0.68);
-        border-radius: 0 0 4px 4px;
-      }
-
-      .piano-roll-key.black::after {
-        content: "";
-        position: absolute;
-        left: -6px;
-        right: -6px;
-        bottom: calc(var(--note-height) * -0.32 - 1px);
-        height: calc(var(--note-height) * 0.32 + 1px);
-        background: linear-gradient(180deg, #f9fafb 0%, #e5e7eb 70%, #d1d5db 100%);
-        border: 1px solid #cbd5e1;
-        border-top: none;
-        border-radius: 0 0 6px 6px;
-        box-shadow: inset -1px 0 2px rgba(0, 0, 0, 0.2);
-        z-index: 1;
       }
 
       .piano-roll-timeline {

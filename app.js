@@ -644,7 +644,6 @@ function renderPianoRoll(result, minMidi, maxMidi, totalBeats) {
     const top = height - (index + 1) * noteHeight;
     key.style.top = `${top}px`;
     key.style.height = `${noteHeight}px`;
-    key.style.setProperty("--note-height", `${noteHeight}px`);
 
     keyboard.appendChild(key);
   }
