@@ -164,20 +164,48 @@
         right: 0;
         border: 1px solid #1f2937;
         box-sizing: border-box;
+        --note-height: 0px;
+        overflow: visible;
       }
 
       .piano-roll-key.white {
         background: linear-gradient(180deg, #f9fafb 0%, #e5e7eb 60%, #d1d5db 100%);
         box-shadow: inset -1px 0 2px rgba(0, 0, 0, 0.25);
+        z-index: 1;
       }
 
       .piano-roll-key.black {
-        background: linear-gradient(180deg, #1f2937 0%, #111827 70%, #0f172a 100%);
+        background: transparent;
         width: 65%;
         right: 4px;
         z-index: 2;
-        border-color: #0f172a;
+        border: none;
+      }
+
+      .piano-roll-key.black .key-top {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        height: calc(var(--note-height) * 0.68);
+        background: linear-gradient(180deg, #1f2937 0%, #111827 70%, #0f172a 100%);
+        border: 1px solid #0f172a;
+        border-radius: 0 0 4px 4px;
         box-shadow: inset -1px -2px 3px rgba(0, 0, 0, 0.55);
+      }
+
+      .piano-roll-key.black .key-tail {
+        position: absolute;
+        left: -6px;
+        right: -6px;
+        top: calc(var(--note-height) * 0.68);
+        height: calc(var(--note-height) * 0.32 + 1px);
+        background: linear-gradient(180deg, #f9fafb 0%, #e5e7eb 70%, #d1d5db 100%);
+        border: 1px solid #cbd5e1;
+        border-top: none;
+        border-radius: 0 0 6px 6px;
+        box-shadow: inset -1px 0 2px rgba(0, 0, 0, 0.2);
+        z-index: 1;
       }
 
       .piano-roll-timeline {
