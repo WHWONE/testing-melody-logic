@@ -1,3 +1,4 @@
+
 // app.js
 // Main SPA-like controller for the Melody Engine demo
 
@@ -644,6 +645,17 @@ function renderPianoRoll(result, minMidi, maxMidi, totalBeats) {
     const top = height - (index + 1) * noteHeight;
     key.style.top = `${top}px`;
     key.style.height = `${noteHeight}px`;
+    key.style.setProperty("--note-height", `${noteHeight}px`);
+
+    if (black) {
+      const topFace = document.createElement("div");
+      topFace.className = "key-top";
+      const tail = document.createElement("div");
+      tail.className = "key-tail";
+
+      key.appendChild(topFace);
+      key.appendChild(tail);
+    }
 
     keyboard.appendChild(key);
   }
