@@ -200,11 +200,14 @@
         right: -6px;
         top: calc(var(--note-height) * 0.68);
         height: calc(var(--note-height) * 0.32 + 1px);
-        background: linear-gradient(180deg, #f9fafb 0%, #e5e7eb 70%, #d1d5db 100%);
-        border: 1px solid #cbd5e1;
+
+        /* FIX: tail must be dark (it's part of the black key) */
+        background: linear-gradient(180deg, #1f2937 0%, #111827 70%, #0f172a 100%);
+        border: 1px solid #0f172a;
+
         border-top: none;
         border-radius: 0 0 6px 6px;
-        box-shadow: inset -1px 0 2px rgba(0, 0, 0, 0.2);
+        box-shadow: inset -1px 0 2px rgba(0, 0, 0, 0.55);
         z-index: 1;
       }
 
