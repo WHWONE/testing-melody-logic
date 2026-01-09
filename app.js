@@ -1,4 +1,4 @@
-// app.js - PIANO KEYBOARD RENDERING COMPLETELY REWRITTEN FROM SCRATCH
+// app.js - Piano keyboard based on WHITE keys with black overlays
 
 import { generateMelody } from "./melodyEngine.js";
 import { initAudio, ensureRunning, now, playNoteAt } from "./audioEngine.js";
@@ -197,14 +197,13 @@ function renderJson(result) {
   jsonOutputEl.textContent = JSON.stringify(result, null, 2);
 }
 
-// ========== COMPLETELY NEW PIANO ROLL RENDERING ==========
+// ========== PIANO ROLL: WHITE KEY ROWS + BLACK KEY OVERLAYS ==========
 function renderPianoRoll(result, minMidi, maxMidi, totalBeats) {
   pianoRollEl.innerHTML = "";
 
   const height = pianoRollEl.clientHeight || 260;
   const keyboardWidth = 72;
   
-  // Build keyboard
   const keyboard = document.createElement("div");
   keyboard.className = "piano-roll-keyboard";
   keyboard.style.height = `${height}px`;
@@ -213,23 +212,66 @@ function renderPianoRoll(result, minMidi, maxMidi, totalBeats) {
   // Helper: check if MIDI note is black key
   const isBlackKey = (midi) => [1, 3, 6, 8, 10].includes(midi % 12);
 
-  // Count total semitones in range
-  const totalSemitones = maxMidi - minMidi + 1;
-  const semitoneHeight = height / totalSemitones;
-
-  // RENDER ALL KEYS (white and black) from bottom to top
+  // Build list of WHITE keys only
+  const whiteKeys = [];
   for (let midi = minMidi; midi <= maxMidi; midi++) {
+    if (!isBlackKey(midi)) {
+      whiteKeys.push(midi);
+    }
+  }
+
+  const numWhiteKeys = whiteKeys.length;
+  const whiteKeyHeight = height / numWhiteKeys;
+
+  // Map: MIDI -> white key index (for positioning)
+  const whiteKeyMap = {};
+  whiteKeys.forEach((midi, idx) => {
+    whiteKeyMap[midi] = idx;
+  });
+
+  // STEP 1: Render white key rows
+  whiteKeys.forEach((midi, idx) => {
     const key = document.createElement("div");
-    key.className = isBlackKey(midi) ? "piano-key black" : "piano-key white";
-    
-    // Position from bottom (low notes at bottom, high notes at top)
-    const semitoneIndex = midi - minMidi;
-    const bottom = semitoneIndex * semitoneHeight;
-    
+    key.className = "piano-key white";
+    const bottom = idx * whiteKeyHeight;
     key.style.bottom = `${bottom}px`;
-    key.style.height = `${semitoneHeight}px`;
-    
+    key.style.height = `${whiteKeyHeight}px`;
     keyboard.appendChild(key);
+  });
+
+  // STEP 2: Render black keys as overlays BETWEEN adjacent white keys
+  for (let midi = minMidi; midi <= maxMidi; midi++) {
+    if (isBlackKey(midi)) {
+      // Find adjacent white keys
+      let below = midi - 1;
+      let above = midi + 1;
+      
+      // Walk to nearest white keys
+      while (below >= minMidi && isBlackKey(below)) below--;
+      while (above <= maxMidi && isBlackKey(above)) above++;
+      
+      // If both adjacent white keys exist in range
+      if (below >= minMidi && above <= maxMidi && 
+          whiteKeyMap[below] !== undefined && 
+          whiteKeyMap[above] !== undefined) {
+        
+        const belowIdx = whiteKeyMap[below];
+        const aboveIdx = whiteKeyMap[above];
+        
+        const key = document.createElement("div");
+        key.className = "piano-key black";
+        
+        // Position between the two white keys
+        const bottomPos = belowIdx * whiteKeyHeight;
+        const topPos = (aboveIdx + 1) * whiteKeyHeight;
+        const blackHeight = topPos - bottomPos;
+        
+        key.style.bottom = `${bottomPos}px`;
+        key.style.height = `${blackHeight}px`;
+        
+        keyboard.appendChild(key);
+      }
+    }
   }
 
   // Timeline
@@ -283,10 +325,28 @@ function renderPianoRoll(result, minMidi, maxMidi, totalBeats) {
     measureLayer.appendChild(marker);
   }
 
-  // Helper: MIDI to Y position
+  // Helper: MIDI to Y position (based on white key rows)
   const midiToBottom = (midi) => {
-    const semitoneIndex = midi - minMidi;
-    return semitoneIndex * semitoneHeight;
+    if (isBlackKey(midi)) {
+      // Black key: position between adjacent white keys
+      let below = midi - 1;
+      let above = midi + 1;
+      while (below >= minMidi && isBlackKey(below)) below--;
+      while (above <= maxMidi && isBlackKey(above)) above--;
+      
+      if (whiteKeyMap[below] !== undefined && whiteKeyMap[above] !== undefined) {
+        const belowBottom = whiteKeyMap[below] * whiteKeyHeight;
+        const aboveBottom = whiteKeyMap[above] * whiteKeyHeight;
+        return (belowBottom + aboveBottom) / 2;
+      }
+    }
+    
+    // White key: use its row position
+    if (whiteKeyMap[midi] !== undefined) {
+      return whiteKeyMap[midi] * whiteKeyHeight + whiteKeyHeight / 2;
+    }
+    
+    return 0;
   };
 
   // Render notes
@@ -297,11 +357,11 @@ function renderPianoRoll(result, minMidi, maxMidi, totalBeats) {
     const x = beatToX(ev.startBeat);
     const w = beatToX(ev.startBeat + ev.duration) - x;
     const bottom = midiToBottom(ev.midi);
-    const h = semitoneHeight * 0.9; // Slightly smaller than key height
+    const h = whiteKeyHeight * 0.7;
     
     noteEl.style.left = x + "px";
     noteEl.style.width = Math.max(w, 2) + "px";
-    noteEl.style.bottom = bottom + "px";
+    noteEl.style.bottom = (bottom - h / 2) + "px";
     noteEl.style.height = h + "px";
     
     rollContent.appendChild(noteEl);
