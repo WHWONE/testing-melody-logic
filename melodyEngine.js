@@ -296,7 +296,9 @@ function scoreCandidatePitch({
       if (config.contourMode === "rising") desiredDir = +1;
       else if (config.contourMode === "falling") desiredDir = -1;
       else if (config.contourMode === "arch") desiredDir = (phraseProgress < 0.5) ? +1 : -1;
-
+      else if (config.contourMode === "inverted-arch") desiredDir = (phraseProgress < 0.5) ? -1 : +1;
+      else if (config.contourMode === "pivot") desiredDir = (phraseProgress < 0.33) ? +1 : (phraseProgress < 0.66) ? 0 : -1;
+      
       const thisInt = candidateMidi - lastMidi;
       const thisDir = Math.sign(thisInt);
 
