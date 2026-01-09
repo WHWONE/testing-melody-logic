@@ -137,7 +137,7 @@
         font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
       }
 
-      /* Piano roll - COMPLETELY REDONE */
+      /* Simple piano roll */
       .piano-roll {
         position: relative;
         display: flex;
@@ -154,28 +154,58 @@
         width: 72px;
         flex-shrink: 0;
         border-right: 1px solid #1f2937;
-        background: #1a1a1a;
+        background: linear-gradient(180deg, #0b1220 0%, #111827 100%);
+        box-shadow: inset -4px 0 8px rgba(0, 0, 0, 0.35);
       }
 
-      /* Piano keys in vertical orientation for piano roll */
-      .piano-key {
+      .piano-roll-key {
         position: absolute;
         left: 0;
         right: 0;
+        border: 1px solid #1f2937;
+        box-sizing: border-box;
+        --note-height: 0px;
+        overflow: visible;
       }
 
-      .piano-key.white {
-        background: #f5f5f5;
-        border-bottom: 1px solid #999;
+      .piano-roll-key.white {
+        background: linear-gradient(180deg, #f9fafb 0%, #e5e7eb 60%, #d1d5db 100%);
+        box-shadow: inset -1px 0 2px rgba(0, 0, 0, 0.25);
         z-index: 1;
       }
 
-      .piano-key.black {
-        background: #2a2a2a;
-        left: 0;
-        width: 60%;
-        border: 1px solid #000;
+      .piano-roll-key.black {
+        background: transparent;
+        width: 65%;
+        right: 4px;
         z-index: 2;
+        border: none;
+      }
+
+      .piano-roll-key.black .key-top {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        height: calc(var(--note-height) * 0.68);
+        background: linear-gradient(180deg, #1f2937 0%, #111827 70%, #0f172a 100%);
+        border: 1px solid #0f172a;
+        border-radius: 0 0 4px 4px;
+        box-shadow: inset -1px -2px 3px rgba(0, 0, 0, 0.55);
+      }
+
+      .piano-roll-key.black .key-tail {
+        position: absolute;
+        left: -6px;
+        right: -6px;
+        top: calc(var(--note-height) * 0.68);
+        height: calc(var(--note-height) * 0.32 + 1px);
+        background: linear-gradient(180deg, #f9fafb 0%, #e5e7eb 70%, #d1d5db 100%);
+        border: 1px solid #cbd5e1;
+        border-top: none;
+        border-radius: 0 0 6px 6px;
+        box-shadow: inset -1px 0 2px rgba(0, 0, 0, 0.2);
+        z-index: 1;
       }
 
       .piano-roll-timeline {
@@ -206,6 +236,7 @@
       }
 
       .measure-line {
+        /* thicker / more visible barline */
         width: 2px;
         opacity: 1;
       }
@@ -238,6 +269,7 @@
         pointer-events: none;
       }
 
+      
       .piano-roll-note {
         position: absolute;
         border-radius: 3px;
@@ -304,30 +336,30 @@
           <label for="prog-preset">
             <select id="prog-preset">
               <!-- Jazz / Functional -->
-              <option value="jazz-turnaround">Jazz: I—vi—ii—V</option>
-              <option value="ii-v-i">Jazz: ii—V—I</option>
-              <option value="three-step-ii-v-i">3-Step: ii—V—I</option>
+              <option value="jazz-turnaround">Jazz: I–vi–ii–V</option>
+              <option value="ii-v-i">Jazz: ii–V–I</option>
+              <option value="three-step-ii-v-i">3-Step: ii–V–I</option>
 
               <!-- Pop / Familiar -->
-              <option value="pop-1">Pop: I—V—vi—IV</option>
-              <option value="pop-2">Pop: vi—IV—I—V</option>
-              <option value="three-step-i-iv-v">3-Step: I—IV—V</option>
+              <option value="pop-1">Pop: I–V–vi–IV</option>
+              <option value="pop-2">Pop: vi–IV–I–V</option>
+              <option value="three-step-i-iv-v">3-Step: I–IV–V</option>
 
-              <!-- Neo-Soul / R&B-ish -->
-              <option value="neosoul-1">Neo-Soul: I—iii—IV—ii</option>
-              <option value="neosoul-2">Neo-Soul: I—vi—IV—V</option>
-              <option value="neosoul-3">Neo-Soul: vi—ii—V—I</option>
-              <option value="neosoul-4">Neo-Soul: IV—I—V—vi</option>
-              <option value="neosoul-5">Neo-Soul: I—IV—ii—V</option>
-              <option value="neosoul-6">Neo-Soul: ii—IV—I—V</option>
+              <!-- Neo-Soul / R&B-ish (jazzy-adjacent, diatonic triads) -->
+              <option value="neosoul-1">Neo-Soul: I–iii–IV–ii</option>
+              <option value="neosoul-2">Neo-Soul: I–vi–IV–V</option>
+              <option value="neosoul-3">Neo-Soul: vi–ii–V–I</option>
+              <option value="neosoul-4">Neo-Soul: IV–I–V–vi</option>
+              <option value="neosoul-5">Neo-Soul: I–IV–ii–V</option>
+              <option value="neosoul-6">Neo-Soul: ii–IV–I–V</option>
 
               <!-- Slow Jams -->
-              <option value="slowjam-1">Slow Jam: I—IV—I—V</option>
-              <option value="slowjam-2">Slow Jam: I—ii—IV—I</option>
+              <option value="slowjam-1">Slow Jam: I–IV–I–V</option>
+              <option value="slowjam-2">Slow Jam: I–ii–IV–I</option>
 
               <!-- Utility / Structural -->
-              <option value="four-on-one">Tonic Pedal: I—I—I—I</option>
-              <option value="circle-4ths">Circle-ish: I—IV—vii°—iii—vi—ii—V—I</option>
+              <option value="four-on-one">Tonic Pedal: I–I–I–I</option>
+              <option value="circle-4ths">Circle-ish: I–IV–vii°–iii–vi–ii–V–I</option>
            </select>
         </div>
         <div class="form-group">
