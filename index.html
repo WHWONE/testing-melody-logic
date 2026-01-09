@@ -137,7 +137,7 @@
         font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
       }
 
-      /* Piano roll */
+      /* Piano roll - COMPLETELY REDONE */
       .piano-roll {
         position: relative;
         display: flex;
@@ -154,32 +154,27 @@
         width: 72px;
         flex-shrink: 0;
         border-right: 1px solid #1f2937;
-        background: linear-gradient(180deg, #0b1220 0%, #111827 100%);
-        box-shadow: inset -4px 0 8px rgba(0, 0, 0, 0.35);
+        background: #1a1a1a;
       }
 
-      .piano-roll-key {
+      /* Piano keys in vertical orientation for piano roll */
+      .piano-key {
         position: absolute;
         left: 0;
-        box-sizing: border-box;
+        right: 0;
       }
 
-      /* White keys - full width, light colored */
-      .piano-roll-key.white {
-        right: 0;
-        background: linear-gradient(90deg, #f9fafb 0%, #e5e7eb 50%, #d1d5db 100%);
-        border-bottom: 1px solid #9ca3af;
-        border-right: 1px solid #cbd5e1;
+      .piano-key.white {
+        background: #f5f5f5;
+        border-bottom: 1px solid #999;
         z-index: 1;
       }
 
-      /* Black keys - narrower, positioned on left side, dark colored, overlay white keys */
-      .piano-roll-key.black {
-        width: 55%;
-        background: linear-gradient(90deg, #1f2937 0%, #111827 50%, #0f172a 100%);
+      .piano-key.black {
+        background: #2a2a2a;
+        left: 0;
+        width: 60%;
         border: 1px solid #000;
-        border-right: 1px solid #374151;
-        box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
         z-index: 2;
       }
 
